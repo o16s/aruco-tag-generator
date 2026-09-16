@@ -1,0 +1,54 @@
+name: Release package
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-pack:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test:unit
+      - run: npm run build
+      - run: npm pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-package
+          path: '*.tgz'
+
+  publish:
+    needs: build-and-pack
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      # Mirrored into the job env so the steps below can gate on it: the
+      # `secrets` context is not available in a job-level `if`.
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Publish to npm
+        if: ${{ env.NPM_TOKEN != '' }}
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Report skipped publish
+        if: ${{ env.NPM_TOKEN == '' }}
+        run: |
+          echo "::warning title=Publish skipped::NPM_TOKEN is not configured, so this release was built and packed but not published to npm."

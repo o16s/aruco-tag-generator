@@ -1,0 +1,116 @@
+.aruco-generator {
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  color: #202124;
+}
+
+.aruco-generator__form {
+  margin: 20px auto;
+  width: 440px;
+  max-width: 100%;
+}
+
+.aruco-generator__field {
+  margin: 10px 0;
+}
+
+.aruco-generator__field label {
+  display: inline-block;
+  width: 150px;
+  text-align: right;
+  vertical-align: middle;
+  font-size: 15px;
+  color: #858585;
+}
+
+.aruco-generator__field select,
+.aruco-generator__field input {
+  margin: 0 0 0 20px;
+  font-weight: 300;
+  padding: 2px;
+  vertical-align: -1px;
+}
+
+.aruco-generator__field select {
+  font-size: 17px;
+}
+
+.aruco-generator__field input {
+  font-size: 15px;
+  width: 80px;
+}
+
+.aruco-generator__marker-id {
+  display: none;
+  text-align: center;
+}
+
+.aruco-generator__marker {
+  margin: 40px;
+  text-align: center;
+  background: #fff;
+}
+
+.aruco-generator__tools {
+  margin: 20px;
+  text-align: center;
+  line-height: 20px;
+}
+
+.aruco-generator__tools a,
+.aruco-generator__tools button {
+  font: inherit;
+  font-weight: bold;
+  color: #4761c7;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.aruco-generator__footer {
+  margin: 20px;
+  font-size: 13px;
+  color: #919191;
+}
+
+@media print {
+  /*
+   * arucogen hides every body child except the marker. Here the marker is nested inside a host
+   * page, so we use visibility (which descendants can override) and pin the print area to the
+   * page, then collapse the body so hidden content does not spill onto extra pages.
+   */
+  body.aruco-generator-printing {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: #fff;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  body.aruco-generator-printing * {
+    visibility: hidden;
+  }
+
+  body.aruco-generator-printing .aruco-generator__print-area,
+  body.aruco-generator-printing .aruco-generator__print-area * {
+    visibility: visible;
+  }
+
+  body.aruco-generator-printing .aruco-generator__print-area {
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    padding: 20px;
+    background: #fff;
+    text-align: center;
+  }
+
+  body.aruco-generator-printing .aruco-generator__marker-id {
+    display: block;
+  }
+
+  body.aruco-generator-printing .aruco-generator__marker {
+    margin: 20px 0 0;
+  }
+}
