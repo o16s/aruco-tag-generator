@@ -1,5 +1,13 @@
 :root {
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --app-accent: #1d4ed8;
+  --app-fg: #111827;
+  --app-muted: #4b5563;
+  --app-border: #e5e7eb;
+  --app-bg: #f9fafb;
+  --app-surface: #ffffff;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  line-height: 1.5;
+  color-scheme: light;
 }
 
 * {
@@ -8,6 +16,169 @@
 
 body {
   margin: 0;
-  background: #fff;
-  color: #111827;
+  background: var(--app-bg);
+  color: var(--app-fg);
+}
+
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header: brand left, tabs right; tabs become a full-width bar on phones. */
+.app__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 16px;
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.app__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.app__mark {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  background:
+    linear-gradient(90deg, #000 0 50%, transparent 50%) 0 0 / 12px 6px,
+    linear-gradient(90deg, transparent 0 50%, #000 50%) 0 6px / 12px 6px,
+    linear-gradient(90deg, #000 0 50%, transparent 50%) 0 12px / 12px 6px;
+  background-repeat: repeat-x;
+  background-color: #fff;
+  box-shadow: inset 0 0 0 3px #000;
+}
+
+.app__tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.app__tab {
+  position: relative;
+  min-height: 56px;
+  min-width: 96px;
+  padding: 0 16px;
+  border: 0;
+  background: none;
+  color: var(--app-muted);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 120ms;
+}
+
+.app__tab:hover {
+  color: var(--app-fg);
+}
+
+.app__tab[aria-selected='true'] {
+  color: var(--app-accent);
+}
+
+.app__tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--app-accent);
+}
+
+.app__tab:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: -4px;
+  border-radius: 8px;
+}
+
+.app__main {
+  flex: 1;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.app__panel {
+  display: grid;
+  gap: 16px;
+}
+
+.app__heading {
+  margin: 8px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.app__heading + * {
+  margin-top: -8px;
+}
+
+.app__footer {
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px 16px;
+}
+
+.app__logo {
+  display: block;
+  opacity: 0.55;
+  transition: opacity 120ms;
+}
+
+.app__logo:hover,
+.app__logo:focus-visible {
+  opacity: 1;
+}
+
+.app__logo img {
+  display: block;
+  height: 22px;
+  width: auto;
+}
+
+@media (max-width: 480px) {
+  .app__header {
+    flex-wrap: wrap;
+    padding: 0;
+  }
+
+  .app__brand {
+    padding: 0 16px;
+    min-height: 48px;
+  }
+
+  .app__tabs {
+    width: 100%;
+    gap: 0;
+    border-top: 1px solid var(--app-border);
+  }
+
+  .app__tab {
+    flex: 1;
+    min-height: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app__tab,
+  .app__logo {
+    transition: none;
+  }
 }

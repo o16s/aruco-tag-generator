@@ -30,6 +30,10 @@ export declare const AR: {
   DICTIONARIES: Record<string, ARDictionaryDefinition>;
   Detector: new (config?: { dictionaryName?: string; maxHammingDistance?: number }) => {
     detect(image: ARImage): ARMarker[];
+    /** Grayscale input of the last `detect()` call, one value per pixel. */
+    grey: { width: number; height: number; data: ArrayLike<number> };
+    /** Adaptive-threshold result of the last `detect()` call: 0 or 255 per pixel. */
+    thres: { width: number; height: number; data: ArrayLike<number> };
   };
 };
 

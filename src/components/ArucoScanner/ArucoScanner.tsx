@@ -301,6 +301,8 @@ export function ArucoScanner({
     const ctx = canvas.getContext('2d');
     const scratch = document.createElement('canvas');
     const scratchCtx = scratch.getContext('2d', { willReadFrequently: true });
+    const view = document.createElement('canvas');
+    const viewCtx = view.getContext('2d');
     if (!ctx || !scratchCtx) {
       return;
     }
@@ -351,7 +353,19 @@ export function ArucoScanner({
           return { ...marker, corners, dictionary: current.dictionary, pose, distanceMm: Math.hypot(tx, ty, tz), edgePx };
         })
         .sort((a, b) => a.distanceMm - b.distanceMm);
-      const background = current.showDetectorView ? scratch : active instanceof HTMLVideoElement ? null : active;
+      let background: ScannerSource | null = active instanceof HTMLVideoElement ? null : active;
+      if (current.showDetectorView) {
+        // What the detector actually reads: the adaptively thresholded, downscaled frame.
+        const binary = detector.lastBinary();
+        if (binary) {
+          if (view.width !== binary.width || view.height !== binary.height) {
+            view.width = binary.width;
+            view.height = binary.height;
+          }
+          viewCtx?.putImageData(new ImageData(binary.data as Uint8ClampedArray<ArrayBuffer>, binary.width, binary.height), 0, 0);
+          background = view;
+        }
+      }
       drawOverlay(ctx, background, found, current, intrinsics);
       setMarkers((previous) =>
         previous.length === found.length &&

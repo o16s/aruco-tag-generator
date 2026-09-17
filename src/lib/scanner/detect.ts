@@ -21,6 +21,8 @@ export interface DetectedMarker {
 export interface MarkerDetector {
   dictionary: ArucoDictionaryName;
   detect(image: DetectorImage): DetectedMarker[];
+  /** The black-and-white image the last `detect()` worked on (adaptive threshold), as RGBA. */
+  lastBinary(): DetectorImage | null;
 }
 
 /** A detector for one dictionary. Uses the same marker bits that the generator prints. */
@@ -35,5 +37,20 @@ export function createDetector(dictionary: ArucoDictionaryName): MarkerDetector 
         corners: marker.corners.map((c) => ({ x: c.x, y: c.y })),
         hammingDistance: marker.hammingDistance,
       })),
+    lastBinary: () => {
+      const { width, height, data } = detector.thres;
+      if (!width || !height) {
+        return null;
+      }
+      const rgba = new Uint8ClampedArray(width * height * 4);
+      for (let i = 0, j = 0; i < width * height; i++, j += 4) {
+        const v = data[i];
+        rgba[j] = v;
+        rgba[j + 1] = v;
+        rgba[j + 2] = v;
+        rgba[j + 3] = 255;
+      }
+      return { width, height, data: rgba };
+    },
   };
 }

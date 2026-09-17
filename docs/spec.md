@@ -295,7 +295,7 @@ The component uses the same card as the generators. The preview pane shows the v
 4. Marker size, in millimeters. The printed side of the marker, border included.
 5. Camera field of view, in degrees. The horizontal angle of view of the camera.
 6. Detection width, in pixels. The component downscales each frame to this width before detection. The default is 640 px. A lower value simulates a camera with a lower resolution. A helper text shows the minimum marker size in pixels for the selected dictionary.
-7. "Show detector view". When on, the overlay shows the downscaled frame instead of the video, so the user sees the pixels that the detector reads.
+7. "Show detector view". When on, the overlay shows the black-and-white image that the detector reads: the downscaled frame after the adaptive threshold. The user sees which squares the detector can find and at what pixel size.
 
 The marker size and the field of view change only the distance estimate. They do not change the ID, the dictionary, or the direction of the axes.
 
