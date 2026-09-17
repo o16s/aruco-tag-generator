@@ -44,6 +44,22 @@ const cameraError = (error: unknown): string => {
   return error instanceof Error ? error.message : 'The camera could not be started.';
 };
 
+const MAX_LISTED = 8;
+
+/** One line, bounded in length, for the markers in view (nearest first). */
+function statusText(markers: ScannedMarker[], active: boolean): string {
+  if (markers.length === 0) {
+    return active ? 'No marker in view.' : '';
+  }
+  const metres = (m: ScannedMarker) => `${(m.distanceMm / 1000).toFixed(2)} m`;
+  if (markers.length === 1) {
+    return `ID ${markers[0].id} · ${markers[0].dictionary} · ${metres(markers[0])}`;
+  }
+  const listed = markers.slice(0, MAX_LISTED).map((m) => `${m.id} (${metres(m)})`);
+  const more = markers.length - listed.length;
+  return `${markers.length} markers · ${markers[0].dictionary}: ${listed.join(', ')}${more > 0 ? ` +${more} more` : ''}`;
+}
+
 /** Draw corners, label and the XYZ gizmo for every marker onto the overlay. */
 function drawOverlay(
   ctx: CanvasRenderingContext2D,
@@ -141,6 +157,8 @@ export function ArucoScanner({
   const [facing, setFacing] = useState<'environment' | 'user'>('environment');
   const [cameraCount, setCameraCount] = useState(0);
   const [markers, setMarkers] = useState<ScannedMarker[]>([]);
+  const [fullscreen, setFullscreen] = useState(false);
+  const stage = useRef<HTMLDivElement>(null);
 
   const video = useRef<HTMLVideoElement>(null);
   const overlay = useRef<HTMLCanvasElement>(null);
@@ -190,6 +208,32 @@ export function ArucoScanner({
     }
   };
 
+  const toggleFullscreen = async () => {
+    const el = stage.current;
+    if (!el) {
+      return;
+    }
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+      return;
+    }
+    if (!fullscreen && el.requestFullscreen) {
+      try {
+        await el.requestFullscreen();
+        return;
+      } catch {
+        // fall through to the CSS fallback
+      }
+    }
+    setFullscreen((value) => !value);
+  };
+
+  useEffect(() => {
+    const sync = () => setFullscreen(document.fullscreenElement === stage.current);
+    document.addEventListener('fullscreenchange', sync);
+    return () => document.removeEventListener('fullscreenchange', sync);
+  }, []);
+
   const switchCamera = () => {
     const next = facing === 'environment' ? 'user' : 'environment';
     setFacing(next);
@@ -212,6 +256,7 @@ export function ArucoScanner({
     let detector: MarkerDetector | null = null;
     let frame = 0;
     let cancelled = false;
+    let previousIds = new Set<number>();
 
     const tick = () => {
       if (cancelled) {
@@ -235,14 +280,20 @@ export function ArucoScanner({
       scratch.height = Math.round(height * scale);
       scratchCtx.drawImage(active, 0, 0, scratch.width, scratch.height);
       const intrinsics: Intrinsics = { width, height, focal: focalFromFov(width, current.fovDeg) };
-      const found: ScannedMarker[] = detector
-        .detect(scratchCtx.getImageData(0, 0, scratch.width, scratch.height))
+      const raw = detector.detect(scratchCtx.getImageData(0, 0, scratch.width, scratch.height));
+      // A marker must be seen in two consecutive frames: this drops the one-frame false positives
+      // that cluttered scenes produce with small dictionaries such as 4x4.
+      const currentIds = new Set(raw.map((marker) => marker.id));
+      const stable = raw.filter((marker) => previousIds.has(marker.id));
+      previousIds = currentIds;
+      const found: ScannedMarker[] = stable
         .map((marker) => {
           const corners = marker.corners.map((c) => ({ x: c.x / scale, y: c.y / scale }));
           const pose = estimatePose(corners, intrinsics, current.markerSizeMm);
           const [tx, ty, tz] = pose.translation;
           return { ...marker, corners, dictionary: current.dictionary, pose, distanceMm: Math.hypot(tx, ty, tz) };
-        });
+        })
+        .sort((a, b) => a.distanceMm - b.distanceMm);
       drawOverlay(ctx, active instanceof HTMLVideoElement ? null : active, found, current, intrinsics);
       setMarkers((previous) =>
         previous.length === found.length && previous.every((m, i) => m.id === found[i].id && Math.abs(m.distanceMm - found[i].distanceMm) < 5)
@@ -279,23 +330,23 @@ export function ArucoScanner({
     <section className={`atg ${className ?? ''}`.trim()}>
       <div className="atg-card">
         <div className="atg-preview atg-scanner">
-          <div className="atg-scanner__stage">
+          <div ref={stage} className={`atg-scanner__stage ${fullscreen ? 'is-fullscreen' : ''}`.trim()}>
             {source ? null : <video ref={video} className="atg-scanner__video" playsInline muted autoPlay />}
             <canvas ref={overlay} className="atg-scanner__overlay" aria-label="Detected markers" role="img" />
+            {fullscreen ? (
+              <button type="button" className="atg-btn atg-scanner__exit" onClick={() => void toggleFullscreen()} aria-label="Exit fullscreen">
+                ×
+              </button>
+            ) : null}
           </div>
           {error ? (
             <p className="atg-preview__error" role="alert">
               {error}
             </p>
           ) : null}
-          <ul className="atg-scanner__list" aria-live="polite" data-detections={markers.length}>
-            {markers.map((marker) => (
-              <li key={`${marker.dictionary}-${marker.id}`}>
-                ID {marker.id} · {marker.dictionary} · {(marker.distanceMm / 1000).toFixed(2)} m
-              </li>
-            ))}
-            {markers.length === 0 && (running || source) ? <li className="atg-help">No marker in view.</li> : null}
-          </ul>
+          <p className="atg-scanner__status" aria-live="polite" data-detections={markers.length}>
+            {statusText(markers, running || Boolean(source))}
+          </p>
         </div>
 
         <form ref={form} className="atg-controls" onSubmit={(event) => event.preventDefault()} onChange={update}>
@@ -313,6 +364,11 @@ export function ArucoScanner({
               {running && cameraCount > 1 ? (
                 <button type="button" className="atg-btn" onClick={switchCamera}>
                   Switch camera
+                </button>
+              ) : null}
+              {running ? (
+                <button type="button" className="atg-btn" onClick={() => void toggleFullscreen()}>
+                  Fullscreen
                 </button>
               ) : null}
             </div>

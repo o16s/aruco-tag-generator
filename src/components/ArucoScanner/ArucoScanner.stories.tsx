@@ -76,7 +76,7 @@ export const SyntheticImage: Story = {
   render: () => <SyntheticScene tiltX={35} turnY={-20} />,
   play: async ({ canvas }) => {
     await waitFor(() => expect(canvas.getByText(/ID 42 · 4x4_1000 · \d\.\d\d m/)).toBeVisible(), { timeout: 10000 });
-    await expect(canvas.getByRole('list')).toHaveAttribute('data-detections', '1');
+    await expect(canvas.getByText(/ID 42 · 4x4_1000/)).toHaveAttribute('data-detections', '1');
   },
 };
 

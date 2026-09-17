@@ -285,7 +285,7 @@ The camera needs a secure context. The component shows an error when the page is
 
 The component uses the same card as the generators. The preview pane shows the video and an overlay. The control pane has these controls, in this order:
 
-1. "Start camera" or "Stop camera". A "Switch camera" button appears when the device has more than one camera.
+1. "Start camera" or "Stop camera". A "Switch camera" button appears when the device has more than one camera. A "Fullscreen" button shows the video and the overlay on the full screen. A close button in the corner, or the Escape key, ends the fullscreen view.
 2. Dictionary. The same select as in the generators. The scanner finds only markers of the selected dictionary.
 3. Axis convention. A select with the conventions from section 10.4. A helper text shows the colors and a description of the selected convention.
 4. Marker size, in millimeters. The printed side of the marker, border included.
@@ -301,7 +301,7 @@ For each marker, the overlay shows:
 - A label with the ID, the dictionary, and the distance in meters, for example "ID 42 · 4x4_1000 · 0.35 m".
 - Three arrows from the center of the marker: X in red, Y in green, Z in blue. Each arrow has its letter at the tip. The length of each arrow is half of the marker size.
 
-A list below the video shows the same text for each marker.
+A status line below the video shows the markers in view on one line, nearest first. For one marker it shows the same text as the label. For more markers it shows the count, the dictionary, and up to 8 IDs with their distances, then "+N more". The line does not grow with time.
 
 ### 10.4 Axis conventions
 
@@ -325,6 +325,7 @@ As a result:
 - The direction of the axes is correct for the marker in view.
 - The distance is an estimate. The error grows when the field of view value is wrong.
 - The detector reads the marker bits from a warped square of 8 pixels per module. A marker must be larger than about 40 pixels in the frame.
+- A marker is shown only when the detector finds it in two consecutive frames. This removes most false positives from cluttered scenes, at the cost of one frame of delay.
 - The detector accepts a Hamming distance of less than `tau`. `tau` is 60 % of the unique-decoding radius of the dictionary, plus one, the same rule as OpenCV.
 
 ### 10.6 Procedure: scan a marker
