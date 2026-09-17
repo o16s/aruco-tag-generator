@@ -7,36 +7,48 @@
   margin: 20px auto;
   width: 440px;
   max-width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
 }
 
 .aruco-generator__field {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  column-gap: 20px;
+  align-items: center;
   margin: 10px 0;
 }
 
 .aruco-generator__field label {
-  display: inline-block;
-  width: 150px;
   text-align: right;
-  vertical-align: middle;
   font-size: 15px;
   color: #6b6b6b;
 }
 
 .aruco-generator__field select,
 .aruco-generator__field input {
-  margin: 0 0 0 20px;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
   font-weight: 300;
-  padding: 2px;
-  vertical-align: -1px;
-}
-
-.aruco-generator__field select {
-  font-size: 17px;
+  font-size: 16px; /* >= 16px so iOS Safari does not zoom on focus */
+  padding: 4px;
+  box-sizing: border-box;
 }
 
 .aruco-generator__field input {
-  font-size: 15px;
-  width: 80px;
+  width: 100px;
+}
+
+@media (max-width: 480px) {
+  .aruco-generator__field {
+    grid-template-columns: 1fr;
+    row-gap: 4px;
+  }
+
+  .aruco-generator__field label {
+    text-align: left;
+  }
 }
 
 .aruco-generator__marker-id {
@@ -45,13 +57,19 @@
 }
 
 .aruco-generator__marker {
-  margin: 40px;
+  margin: 40px 16px;
   text-align: center;
   background: #fff;
 }
 
+/* Keep the physical size for print/download, but never overflow a small screen. */
+.aruco-generator__marker svg {
+  max-width: 100%;
+  height: auto;
+}
+
 .aruco-generator__tools {
-  margin: 20px;
+  margin: 20px 16px;
   text-align: center;
   line-height: 20px;
 }
@@ -69,7 +87,7 @@
 }
 
 .aruco-generator__footer {
-  margin: 20px;
+  margin: 20px 16px;
   font-size: 13px;
   color: #6b6b6b;
 }

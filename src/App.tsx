@@ -2,7 +2,7 @@ import { ArucoGenerator } from './components/ArucoGenerator';
 
 function App() {
   return (
-    <main style={{ maxWidth: 900, margin: '0 auto' }}>
+    <main style={{ maxWidth: 900, margin: "0 auto" }}>
       <h1 style={{ fontWeight: 'normal', textAlign: 'center', fontSize: 22, margin: '20px 20px 40px' }}>
         ArUco markers generator
       </h1>
