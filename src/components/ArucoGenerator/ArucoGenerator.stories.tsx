@@ -61,8 +61,26 @@ export const DownloadLink: Story = {
 
     const sizeInput = canvas.getByLabelText('Marker size');
     await userEvent.clear(sizeInput);
-    await userEvent.type(sizeInput, '250');
+    await userEvent.type(sizeInput, '150');
     const svg = atob(link.getAttribute('href')!.split(',')[1]);
-    await expect(svg).toContain('width="250mm"');
+    await expect(svg).toContain('width="150mm"');
+  },
+};
+
+export const RefusesOversizedMarker: Story = {
+  play: async ({ canvas, userEvent, args }) => {
+    const sizeInput = canvas.getByLabelText('Marker size');
+    await userEvent.clear(sizeInput);
+    await userEvent.type(sizeInput, '300');
+    await expect(canvas.getByRole('alert')).toHaveTextContent('300 mm does not fit on A4');
+    await expect(sizeInput).toHaveAttribute('aria-invalid', 'true');
+    await expect(canvas.getByRole('button', { name: 'Print / PDF' })).toBeDisabled();
+    await expect(canvas.getByRole('link', { name: 'Download SVG' })).not.toHaveAttribute('href');
+    await expect(args.onChange).not.toHaveBeenCalledWith(expect.objectContaining({ sizeMm: 300 }));
+
+    await userEvent.clear(sizeInput);
+    await userEvent.type(sizeInput, '190');
+    await expect(canvas.queryByRole('alert')).toBeNull();
+    await expect(canvas.getByRole('button', { name: 'Print / PDF' })).toBeEnabled();
   },
 };

@@ -1,7 +1,9 @@
 import { useId, useRef, useState } from 'react';
 import { clampMarkerId, DEFAULT_DICTIONARY, getDictionary, type ArucoDictionaryName } from '../../lib/aruco/dictionaries';
 import {
+  A4,
   DEFAULT_PRESET,
+  PAGE_PADDING_MM,
   getPreset,
   LABEL_SHEET_PRESETS,
   layoutLabel,
@@ -53,10 +55,16 @@ export function ArucoSheetGenerator({
 
   let pages: number[][] = [];
   let error: string | null = null;
-  try {
-    pages = sheetPages(from, to, geometry.perPage);
-  } catch (rangeError) {
-    error = rangeError instanceof Error ? rangeError.message : String(rangeError);
+  if (geometry.perPage === 0) {
+    const maxW = A4.width - 2 * PAGE_PADDING_MM;
+    const maxH = A4.height - 2 * PAGE_PADDING_MM;
+    error = `A ${widthMm} × ${heightMm} mm label does not fit on A4 with ${PAGE_PADDING_MM} mm margins. The maximum is ${maxW} × ${maxH} mm.`;
+  } else {
+    try {
+      pages = sheetPages(from, to, geometry.perPage);
+    } catch (rangeError) {
+      error = rangeError instanceof Error ? rangeError.message : String(rangeError);
+    }
   }
   const pageIndex = Math.min(page, Math.max(pages.length - 1, 0));
 
@@ -82,8 +90,8 @@ export function ArucoSheetGenerator({
       from: nextFrom,
       to: nextTo,
       sheet: String(data.get('sheet')),
-      widthMm: data.has('width') ? clampNumber(Number(data.get('width')), 5, 190) : widthMm,
-      heightMm: data.has('height') ? clampNumber(Number(data.get('height')), 5, 277) : heightMm,
+      widthMm: data.has('width') ? clampNumber(Number(data.get('width')), 5, Number.POSITIVE_INFINITY) : widthMm,
+      heightMm: data.has('height') ? clampNumber(Number(data.get('height')), 5, Number.POSITIVE_INFINITY) : heightMm,
       gapMm: data.has('gap') ? clampNumber(Number(data.get('gap')), 0, 50) : gapMm,
       cutLines: data.has('width') ? data.get('cut') === 'on' : cutLines,
     };
@@ -216,7 +224,7 @@ export function ArucoSheetGenerator({
                   Width
                 </label>
                 <div className="atg-unit">
-                  <input id={`${uid}-width`} className="atg-input" name="width" type="number" inputMode="decimal" min={5} max={190} defaultValue={widthMm} />
+                  <input id={`${uid}-width`} className="atg-input" name="width" type="number" inputMode="decimal" min={5} max={A4.width - 2 * PAGE_PADDING_MM} defaultValue={widthMm} />
                   <span aria-hidden="true">mm</span>
                 </div>
               </div>
@@ -225,7 +233,7 @@ export function ArucoSheetGenerator({
                   Height
                 </label>
                 <div className="atg-unit">
-                  <input id={`${uid}-height`} className="atg-input" name="height" type="number" inputMode="decimal" min={5} max={277} defaultValue={heightMm} />
+                  <input id={`${uid}-height`} className="atg-input" name="height" type="number" inputMode="decimal" min={5} max={A4.height - 2 * PAGE_PADDING_MM} defaultValue={heightMm} />
                   <span aria-hidden="true">mm</span>
                 </div>
               </div>
@@ -249,7 +257,9 @@ export function ArucoSheetGenerator({
         ) : null}
 
         <p className="atg-summary" aria-live="polite">
-          {geometry.perPage} per page · {pages.length} {pages.length === 1 ? 'page' : 'pages'} · marker {markerSize.toFixed(1)} mm
+          {error
+            ? 'Fix the error above to print.'
+            : `${geometry.perPage} per page · ${pages.length} ${pages.length === 1 ? 'page' : 'pages'} · marker ${markerSize.toFixed(1)} mm`}
         </p>
 
         <div className="atg-actions">

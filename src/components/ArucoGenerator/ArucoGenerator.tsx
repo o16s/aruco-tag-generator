@@ -2,13 +2,24 @@ import { useId, useRef, useState, type CSSProperties } from 'react';
 import { ArucoMarker } from '../ArucoMarker';
 import { clampMarkerId, DEFAULT_DICTIONARY, getDictionary, type ArucoDictionaryName } from '../../lib/aruco/dictionaries';
 import { markerFileName, markerSvgDataUri, markerSvgString } from '../../lib/aruco/marker';
+import { A4, PAGE_PADDING_MM } from '../../lib/aruco/label';
 import { printArea } from '../../lib/print';
-import { clampNumber } from '../../lib/number';
 import { DictionarySelect, PrintPortal } from '../atg';
 import type { ArucoGeneratorProps, ArucoGeneratorValue } from './types';
 
 const MIN_SIZE_MM = 10;
-const MAX_SIZE_MM = 5000;
+/** The marker must fit on an A4 page inside the print padding, so the size is physically true. */
+const MAX_SIZE_MM = A4.width - 2 * PAGE_PADDING_MM;
+
+const sizeError = (size: number): string | null => {
+  if (!Number.isFinite(size) || size < MIN_SIZE_MM) {
+    return `Enter a size of at least ${MIN_SIZE_MM} mm.`;
+  }
+  if (size > MAX_SIZE_MM) {
+    return `${size} mm does not fit on A4. The maximum is ${MAX_SIZE_MM} mm (210 mm minus 2 × ${PAGE_PADDING_MM} mm).`;
+  }
+  return null;
+};
 
 export function ArucoGenerator({
   defaultDictionary = DEFAULT_DICTIONARY,
@@ -22,8 +33,9 @@ export function ArucoGenerator({
   const [value, setValue] = useState<ArucoGeneratorValue>(() => ({
     dictionary: defaultDictionary,
     id: clampMarkerId(defaultDictionary, defaultId),
-    sizeMm: clampNumber(defaultSizeMm, MIN_SIZE_MM, MAX_SIZE_MM),
+    sizeMm: sizeError(defaultSizeMm) ? 100 : defaultSizeMm,
   }));
+  const [error, setError] = useState<string | null>(null);
   const form = useRef<HTMLFormElement>(null);
   const idInput = useRef<HTMLInputElement>(null);
   const printNode = useRef<HTMLDivElement>(null);
@@ -42,9 +54,15 @@ export function ArucoGenerator({
     if (idInput.current && Number(idInput.current.value) !== nextId) {
       idInput.current.value = String(nextId);
     }
-    const next = { dictionary: nextDictionary, id: nextId, sizeMm: clampNumber(Number(data.get('size')), MIN_SIZE_MM, MAX_SIZE_MM) };
+    const size = Number(data.get('size'));
+    const problem = sizeError(size);
+    setError(problem);
+    // An invalid size keeps the last valid one: the preview stays true and the actions are disabled.
+    const next = { dictionary: nextDictionary, id: nextId, sizeMm: problem ? sizeMm : size };
     setValue(next);
-    onChange?.(next);
+    if (!problem) {
+      onChange?.(next);
+    }
   };
 
   const step = (delta: number) => {
@@ -115,19 +133,30 @@ export function ArucoGenerator({
               min={MIN_SIZE_MM}
               max={MAX_SIZE_MM}
               defaultValue={sizeMm}
+              aria-invalid={Boolean(error)}
+              aria-describedby={`${uid}-size-help`}
             />
             <span aria-hidden="true">mm</span>
           </div>
+          <p id={`${uid}-size-help`} className={error ? 'atg-preview__error' : 'atg-help'} role={error ? 'alert' : undefined}>
+            {error ?? `${MIN_SIZE_MM} – ${MAX_SIZE_MM} mm, fits A4`}
+          </p>
         </div>
 
         <div className="atg-actions">
-          <button type="button" className="atg-btn atg-btn--primary" onClick={() => printArea(printNode.current, 'size: A4; margin: 0')}>
+          <button
+            type="button"
+            className="atg-btn atg-btn--primary"
+            onClick={() => printArea(printNode.current, 'size: A4; margin: 0')}
+            disabled={Boolean(error)}
+          >
             Print / PDF
           </button>
           <a
             className="atg-btn"
-            href={markerSvgDataUri(markerSvgString(dictionary, id, { fixPdfArtifacts, sizeMm }))}
+            href={error ? undefined : markerSvgDataUri(markerSvgString(dictionary, id, { fixPdfArtifacts, sizeMm }))}
             download={markerFileName(dictionary, id)}
+            aria-disabled={Boolean(error)}
           >
             Download SVG
           </a>

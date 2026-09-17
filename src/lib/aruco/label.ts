@@ -10,7 +10,8 @@ export const DIGIT_WIDTH = 0.556;
 export const LABEL_FONT = "Arial, Helvetica, 'Liberation Sans', sans-serif";
 export const MAX_PAGES = 100;
 const MIN_QUIET_ZONE = 2;
-const CUSTOM_PAGE_MARGIN = 10;
+/** White page padding used by both print layouts, mm. */
+export const PAGE_PADDING_MM = 10;
 
 export interface LabelSheetPreset {
   code: string;
@@ -163,9 +164,9 @@ export function layoutSheet(sheet: LabelSheetPreset | CustomSheet): SheetGeometr
     };
   }
   const { width, height, gap } = sheet;
-  const cols = Math.max(0, Math.floor((A4.width - 2 * CUSTOM_PAGE_MARGIN + gap) / (width + gap)));
-  const rows = Math.max(0, Math.floor((A4.height - 2 * CUSTOM_PAGE_MARGIN + gap) / (height + gap)));
-  return { width, height, cols, rows, gapX: gap, gapY: gap, left: CUSTOM_PAGE_MARGIN, top: CUSTOM_PAGE_MARGIN, perPage: cols * rows };
+  const cols = Math.max(0, Math.floor((A4.width - 2 * PAGE_PADDING_MM + gap) / (width + gap)));
+  const rows = Math.max(0, Math.floor((A4.height - 2 * PAGE_PADDING_MM + gap) / (height + gap)));
+  return { width, height, cols, rows, gapX: gap, gapY: gap, left: PAGE_PADDING_MM, top: PAGE_PADDING_MM, perPage: cols * rows };
 }
 
 /** Top-left corner of label `index` (0-based, row-major) on its page. */

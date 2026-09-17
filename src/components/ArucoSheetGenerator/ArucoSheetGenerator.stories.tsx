@@ -58,5 +58,11 @@ export const SwitchToCustom: Story = {
     await expect(canvas.getByLabelText('Width')).toHaveValue(50);
     await expect(canvas.getByLabelText('Cut lines')).toBeChecked();
     await expect(canvas.getByText(/24 per page/)).toBeVisible();
+
+    const width = canvas.getByLabelText('Width');
+    await userEvent.clear(width);
+    await userEvent.type(width, '300');
+    await expect(canvas.getByRole('alert')).toHaveTextContent('does not fit on A4');
+    await expect(canvas.getByRole('button', { name: 'Print / PDF' })).toBeDisabled();
   },
 };

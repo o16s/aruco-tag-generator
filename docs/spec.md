@@ -72,9 +72,11 @@ The control pane has these fields, in this order:
 
 1. Dictionary. A select with two groups, "Standard" and "AprilTag".
 2. Marker ID. A stepper: a decrease button, a number input, and an increase button. A helper text shows the permitted range, for example "0 – 999".
-3. Marker size. A number input with the unit "mm" after the value. The permitted range is 10 mm to 5000 mm.
+3. Marker size. A number input with the unit "mm" after the value. The permitted range is 10 mm to 190 mm. The maximum is the A4 width minus two page margins of 10 mm.
 
-The component clamps each value into its permitted range. If the user selects a smaller dictionary, the component decreases the ID to the last ID of that dictionary.
+The component clamps the ID into its permitted range. If the user selects a smaller dictionary, the component decreases the ID to the last ID of that dictionary.
+
+The component does not clamp the marker size. If the size is outside the permitted range, the component shows an error below the field and disables the two buttons. The preview keeps the last valid size. Thus a printed marker always has the size that the user entered.
 
 The buttons are below the fields:
 
@@ -146,6 +148,8 @@ The L7160 preset gives a left margin of 7.25 mm and a top margin of 15.15 mm. Th
 ### 5.4 Custom size
 
 For a custom size, the page margin is 10 mm on all sides. The gap applies between columns and between rows. The column count is the largest integer that fits in the printable width. The row count is the largest integer that fits in the printable height.
+
+If the label does not fit in the printable area, the component shows an error and disables the two buttons. The maximum label size is 190 mm × 277 mm.
 
 If "Cut lines" is on, each label gets a dashed border with a line width of 0.2 mm.
 
@@ -264,6 +268,7 @@ A host page can set the tokens on the component or on one of its ancestors. The 
 
 - The sheets are A4 only. US Letter is not supported.
 - The maximum page count is 100.
+- The maximum marker size for a single print is 190 mm. The maximum custom label size is 190 mm × 277 mm.
 - The ID font depends on the fonts of the printer or the PDF viewer. The fallback fonts are metric-compatible with Arial.
 - The download of a sheet gives one SVG file per page.
 - The components do not read or write a URL. The host page keeps the state if it needs a deep link.
