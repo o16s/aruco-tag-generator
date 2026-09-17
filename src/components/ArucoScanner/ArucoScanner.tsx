@@ -145,6 +145,9 @@ export function ArucoScanner({
   defaultConvention = DEFAULT_CONVENTION,
   defaultMarkerSizeMm = 100,
   defaultHorizontalFovDeg = 60,
+  enterHits = 2,
+  holdMs = 200,
+  alpha = 0.6,
   source,
   onDetect,
   className,
@@ -285,7 +288,7 @@ export function ArucoScanner({
     let detector: MarkerDetector | null = null;
     let frame = 0;
     let cancelled = false;
-    const tracker = createTracker();
+    const tracker = createTracker({ enterHits, holdMs, alpha });
 
     const tick = () => {
       if (cancelled) {
@@ -336,7 +339,7 @@ export function ArucoScanner({
       cancelled = true;
       cancelAnimationFrame(frame);
     };
-  }, [source, running]);
+  }, [source, running, enterHits, holdMs, alpha]);
 
   useEffect(() => stop, []);
 

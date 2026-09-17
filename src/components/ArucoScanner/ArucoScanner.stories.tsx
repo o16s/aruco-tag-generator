@@ -6,6 +6,16 @@ import { ArucoScanner } from './ArucoScanner';
 
 const meta = {
   component: ArucoScanner,
+  args: {
+    enterHits: 2,
+    holdMs: 200,
+    alpha: 0.6,
+  },
+  argTypes: {
+    enterHits: { control: { type: 'range', min: 1, max: 5, step: 1 }, description: 'Consecutive detections before a marker is shown' },
+    holdMs: { control: { type: 'range', min: 0, max: 1000, step: 50 }, description: 'Hold after the last detection, ms' },
+    alpha: { control: { type: 'range', min: 0.1, max: 1, step: 0.05 }, description: 'Corner smoothing weight of the new detection (1 = none)' },
+  },
   tags: ['ai-generated'],
 } satisfies Meta<typeof ArucoScanner>;
 
@@ -20,7 +30,7 @@ export const CameraLive: Story = {};
  * A marker rendered in perspective (tilted back and turned) and rasterised to a canvas, so the
  * detector and the gizmo can be exercised without a camera.
  */
-function SyntheticScene({ tiltX, turnY }: { tiltX: number; turnY: number }) {
+function SyntheticScene({ tiltX, turnY, ...tracker }: { tiltX: number; turnY: number; enterHits?: number; holdMs?: number; alpha?: number }) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   useEffect(() => {
     const image = new Image();
@@ -69,11 +79,11 @@ function SyntheticScene({ tiltX, turnY }: { tiltX: number; turnY: number }) {
     };
     image.src = markerSvgDataUri(markerSvgString('4x4_1000', 42, { fixPdfArtifacts: false, sizeMm: 100 }).replace('width="100mm" height="100mm"', 'width="600" height="600"'));
   }, [tiltX, turnY]);
-  return canvas ? <ArucoScanner source={canvas} /> : <p>Rendering scene…</p>;
+  return canvas ? <ArucoScanner source={canvas} {...tracker} /> : <p>Rendering scene…</p>;
 }
 
 export const SyntheticImage: Story = {
-  render: () => <SyntheticScene tiltX={35} turnY={-20} />,
+  render: (args) => <SyntheticScene tiltX={35} turnY={-20} {...args} />,
   play: async ({ canvas }) => {
     await waitFor(() => expect(canvas.getByText(/ID 42 · 4x4_1000 · \d\.\d\d m/)).toBeVisible(), { timeout: 10000 });
     await expect(canvas.getByText(/ID 42 · 4x4_1000/)).toHaveAttribute('data-detections', '1');
@@ -81,5 +91,5 @@ export const SyntheticImage: Story = {
 };
 
 export const SyntheticFrontal: Story = {
-  render: () => <SyntheticScene tiltX={0} turnY={0} />,
+  render: (args) => <SyntheticScene tiltX={0} turnY={0} {...args} />,
 };
