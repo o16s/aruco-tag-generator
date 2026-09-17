@@ -332,7 +332,7 @@ As a result:
 
 - The direction of the axes is correct for the marker in view.
 - The distance is an estimate. The error grows when the field of view value is wrong.
-- The detector reads the marker bits from a warped square of 8 pixels per module. A marker must span at least 8 pixels per module in the downscaled frame: 48 px for a 4x4 dictionary, 72 px for a 7x7 dictionary.
+- The detector reads the marker bits from a warped square of 8 pixels per module. Detection is reliable when a marker spans about 8 pixels per module in the downscaled frame: 48 px for a 4x4 dictionary, 72 px for a 7x7 dictionary. A clean image can decode at smaller sizes, but a camera image with noise usually cannot.
 - A tracker filters the detections of each frame. A marker appears after two consecutive detections. A marker stays for 200 ms after its last detection, drawn at its last pose with a lighter outline. The corners of a marker are smoothed with a weight of 0.6 for the new detection. This removes most false positives and most flicker, at the cost of one frame of delay and a short hold when a marker leaves the view.
 - The `coasting` flag of a marker is true while the tracker holds it without a detection.
 - The tracker identifies a marker by its ID. Two printed copies of the same ID in one view give one merged, incorrect pose.

@@ -526,8 +526,8 @@ export function ArucoScanner({
           </div>
           <p className="atg-help">
             Frames are downscaled to this width before detection. Lower values simulate a low-resolution camera, so you can
-            find the range limit for a marker size. A {settings.dictionary} marker needs at least {minEdgePx} px across at
-            this resolution; the status line shows the measured size.
+            find the range limit for a marker size. A {settings.dictionary} marker is read reliably from about {minEdgePx} px
+            across at this resolution (8 px per module); the status line shows the measured size.
           </p>
         </form>
       </div>
