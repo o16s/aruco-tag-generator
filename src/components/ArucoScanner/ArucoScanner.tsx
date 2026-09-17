@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { DEFAULT_DICTIONARY, type ArucoDictionaryName } from '../../lib/aruco/dictionaries';
 import { clampNumber } from '../../lib/number';
 import { createDetector, type MarkerDetector } from '../../lib/scanner/detect';
+import { createTracker } from '../../lib/scanner/track';
 import {
   AXIS_CONVENTIONS,
   DEFAULT_CONVENTION,
@@ -77,6 +78,7 @@ function drawOverlay(
   ctx.lineCap = 'round';
   for (const marker of markers) {
     const { corners } = marker;
+    ctx.globalAlpha = marker.coasting ? 0.45 : 1;
     const edge = Math.hypot(corners[1].x - corners[0].x, corners[1].y - corners[0].y);
     const stroke = Math.max(2, edge / 40);
     const fontPx = Math.max(14, edge / 6);
@@ -135,6 +137,7 @@ function drawOverlay(
     ctx.fillStyle = '#fff';
     ctx.fillText(text, x + pad, y + pad);
   }
+  ctx.globalAlpha = 1;
 }
 
 export function ArucoScanner({
@@ -282,7 +285,7 @@ export function ArucoScanner({
     let detector: MarkerDetector | null = null;
     let frame = 0;
     let cancelled = false;
-    let previousIds = new Set<number>();
+    const tracker = createTracker();
 
     const tick = () => {
       if (cancelled) {
@@ -300,21 +303,21 @@ export function ArucoScanner({
       }
       if (!detector || detector.dictionary !== current.dictionary) {
         detector = createDetector(current.dictionary);
+        tracker.reset();
       }
       const scale = Math.min(1, MAX_DETECT_WIDTH / width);
       scratch.width = Math.round(width * scale);
       scratch.height = Math.round(height * scale);
       scratchCtx.drawImage(active, 0, 0, scratch.width, scratch.height);
       const intrinsics: Intrinsics = { width, height, focal: focalFromFov(width, current.fovDeg) };
-      const raw = detector.detect(scratchCtx.getImageData(0, 0, scratch.width, scratch.height));
-      // A marker must be seen in two consecutive frames: this drops the one-frame false positives
-      // that cluttered scenes produce with small dictionaries such as 4x4.
-      const currentIds = new Set(raw.map((marker) => marker.id));
-      const stable = raw.filter((marker) => previousIds.has(marker.id));
-      previousIds = currentIds;
-      const found: ScannedMarker[] = stable
+      const raw = detector
+        .detect(scratchCtx.getImageData(0, 0, scratch.width, scratch.height))
+        .map((marker) => ({ ...marker, corners: marker.corners.map((c) => ({ x: c.x / scale, y: c.y / scale })) }));
+      // Hysteresis + smoothing: appear after two hits, survive short gaps, no corner jitter.
+      const found: ScannedMarker[] = tracker
+        .update(raw, performance.now())
         .map((marker) => {
-          const corners = marker.corners.map((c) => ({ x: c.x / scale, y: c.y / scale }));
+          const { corners } = marker;
           const pose = estimatePose(corners, intrinsics, current.markerSizeMm);
           const [tx, ty, tz] = pose.translation;
           return { ...marker, corners, dictionary: current.dictionary, pose, distanceMm: Math.hypot(tx, ty, tz) };

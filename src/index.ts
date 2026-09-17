@@ -42,6 +42,8 @@ export {
 } from './lib/aruco/label';
 export type { CustomSheet, LabelLayout, LabelSheetPreset, SheetGeometry } from './lib/aruco/label';
 export { createDetector } from './lib/scanner/detect';
+export { createTracker } from './lib/scanner/track';
+export type { MarkerTracker, TrackedMarker, TrackerOptions } from './lib/scanner/track';
 export type { DetectedMarker, MarkerDetector } from './lib/scanner/detect';
 export {
   AXIS_COLORS,

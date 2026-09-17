@@ -329,7 +329,8 @@ As a result:
 - The direction of the axes is correct for the marker in view.
 - The distance is an estimate. The error grows when the field of view value is wrong.
 - The detector reads the marker bits from a warped square of 8 pixels per module. A marker must be larger than about 40 pixels in the frame.
-- A marker is shown only when the detector finds it in two consecutive frames. This removes most false positives from cluttered scenes, at the cost of one frame of delay.
+- A tracker filters the detections of each frame. A marker appears after two consecutive detections. A marker stays for 200 ms after its last detection, drawn at its last pose with a lighter outline. The corners of a marker are smoothed with a weight of 0.6 for the new detection. This removes most false positives and most flicker, at the cost of one frame of delay and a short hold when a marker leaves the view.
+- The `coasting` flag of a marker is true while the tracker holds it without a detection.
 - The detector accepts a Hamming distance of less than `tau`. `tau` is 60 % of the unique-decoding radius of the dictionary, plus one, the same rule as OpenCV.
 
 ### 10.6 Procedure: scan a marker

@@ -1,8 +1,8 @@
 import type { ArucoDictionaryName } from '../../lib/aruco/dictionaries';
-import type { DetectedMarker } from '../../lib/scanner/detect';
+import type { TrackedMarker } from '../../lib/scanner/track';
 import type { MarkerPose } from '../../lib/scanner/pose';
 
-export interface ScannedMarker extends DetectedMarker {
+export interface ScannedMarker extends TrackedMarker {
   dictionary: ArucoDictionaryName;
   pose: MarkerPose;
   /** Distance from the camera to the marker centre in millimetres (pinhole estimate). */
