@@ -8,6 +8,8 @@ export { ArucoGenerator } from './components/ArucoGenerator';
 export type { ArucoGeneratorProps, ArucoGeneratorValue } from './components/ArucoGenerator';
 export { ArucoSheetGenerator } from './components/ArucoSheetGenerator';
 export type { ArucoSheetGeneratorProps, ArucoSheetGeneratorValue } from './components/ArucoSheetGenerator';
+export { ArucoScanner } from './components/ArucoScanner';
+export type { ArucoScannerProps, ScannedMarker, ScannerSource } from './components/ArucoScanner';
 export { printArea } from './lib/print';
 export {
   ARUCO_DICTIONARIES,
@@ -39,3 +41,16 @@ export {
   sheetPages,
 } from './lib/aruco/label';
 export type { CustomSheet, LabelLayout, LabelSheetPreset, SheetGeometry } from './lib/aruco/label';
+export { createDetector } from './lib/scanner/detect';
+export type { DetectedMarker, MarkerDetector } from './lib/scanner/detect';
+export {
+  AXIS_COLORS,
+  AXIS_CONVENTIONS,
+  DEFAULT_CONVENTION,
+  estimatePose,
+  focalFromFov,
+  getConvention,
+  gizmoSegments,
+  projectPoint,
+} from './lib/scanner/pose';
+export type { AxisConvention, GizmoSegment, Intrinsics, MarkerPose, Point2 } from './lib/scanner/pose';

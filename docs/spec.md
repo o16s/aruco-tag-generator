@@ -272,3 +272,68 @@ A host page can set the tokens on the component or on one of its ancestors. The 
 - The ID font depends on the fonts of the printer or the PDF viewer. The fallback fonts are metric-compatible with Arial.
 - The download of a sheet gives one SVG file per page.
 - The components do not read or write a URL. The host page keeps the state if it needs a deep link.
+
+## 10. `ArucoScanner`
+
+### 10.1 Purpose
+
+`ArucoScanner` reads frames from the camera of the device, finds markers, and shows the result on the frames. The result for each marker has three parts: the ID, the dictionary, and an arrow gizmo with the three axes of the marker.
+
+The camera needs a secure context. The component shows an error when the page is not on HTTPS or localhost.
+
+### 10.2 Layout and controls
+
+The component uses the same card as the generators. The preview pane shows the video and an overlay. The control pane has these controls, in this order:
+
+1. "Start camera" or "Stop camera". A "Switch camera" button appears when the device has more than one camera.
+2. Dictionary. The same select as in the generators. The scanner finds only markers of the selected dictionary.
+3. Axis convention. A select with the conventions from section 10.4. A helper text shows the colors and a description of the selected convention.
+4. Marker size, in millimeters. The printed side of the marker, border included.
+5. Camera field of view, in degrees. The horizontal angle of view of the camera.
+
+The marker size and the field of view change only the distance estimate. They do not change the ID, the dictionary, or the direction of the axes.
+
+### 10.3 Overlay
+
+For each marker, the overlay shows:
+
+- A green outline on the four corners.
+- A label with the ID, the dictionary, and the distance in meters, for example "ID 42 · 4x4_1000 · 0.35 m".
+- Three arrows from the center of the marker: X in red, Y in green, Z in blue. Each arrow has its letter at the tip. The length of each arrow is half of the marker size.
+
+A list below the video shows the same text for each marker.
+
+### 10.4 Axis conventions
+
+The colors are the same in every convention: X red, Y green, Z blue.
+
+| Convention | X | Y | Z |
+|---|---|---|---|
+| OpenCV ArUco (default) | right | up | out of the marker, to the camera |
+| AprilTag | right | down | into the marker, away from the camera |
+
+"Right" and "up" refer to the marker as printed, with the bits in their canonical orientation. The original ArUco library uses the OpenCV convention. The `apriltag` C library and `apriltag_ros` use the AprilTag convention. Both conventions are right-handed.
+
+The table `AXIS_CONVENTIONS` in `src/lib/scanner/pose.ts` holds each convention as a rotation to the OpenCV frame. A new convention needs one entry in this table and one row in the table above.
+
+### 10.5 Pose model and limits
+
+The pose comes from the four corners of the marker with the POSIT algorithm. The camera model is a pinhole camera. The principal point is the center of the image. The focal length comes from the field of view. The model has no lens distortion.
+
+As a result:
+
+- The direction of the axes is correct for the marker in view.
+- The distance is an estimate. The error grows when the field of view value is wrong.
+- The detector reads the marker bits from a warped square of 8 pixels per module. A marker must be larger than about 40 pixels in the frame.
+- The detector accepts a Hamming distance of less than `tau`. `tau` is 60 % of the unique-decoding radius of the dictionary, plus one, the same rule as OpenCV.
+
+### 10.6 Procedure: scan a marker
+
+1. Open the page on HTTPS or on localhost.
+2. Select the dictionary of the printed marker.
+3. Click "Start camera".
+4. If the browser asks for permission, allow the camera.
+5. Point the camera at the marker. Make sure that the marker has a white margin around its black border.
+6. Read the ID and the dictionary on the overlay.
+7. If the distance is important, set the marker size and the field of view of the camera.
+8. If the software that uses the pose expects the AprilTag convention, select "AprilTag".

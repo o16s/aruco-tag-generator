@@ -30,6 +30,7 @@ export function Example() {
 |---|---|
 | `ArucoGenerator` | Dictionary, ID stepper and size. Preview, **Print / PDF** (marker, ID and dictionary name on one page) and **Download SVG**. |
 | `ArucoSheetGenerator` | Dictionary, ID range and label sheet (12 Avery A4 presets or a custom size with cut lines). Paged preview, **Print / PDF** and **Download SVG** per page. |
+| `ArucoScanner` | Camera scanner: finds markers of the selected dictionary in the live video and overlays ID, dictionary, distance and an XYZ gizmo (OpenCV ArUco or AprilTag axis convention). Needs HTTPS. |
 | `ArucoMarker` | Headless SVG marker. `sizeMm` sets physical size; omit it to scale to the container. Accepts SVG props such as `x`, `y`, `width`, `height`. |
 | `ArucoLabel` | Headless label: marker, quiet zone and ID. Rectangular labels put the ID right of the marker at marker height, near-square labels put it below. |
 | `ArucoLabelSheet` | Headless A4 pages of labels for a list of IDs and a sheet geometry. |
@@ -45,6 +46,10 @@ Override the tokens on the component or any ancestor:
 ```
 
 Tokens: `--atg-accent`, `--atg-on-accent`, `--atg-fg`, `--atg-muted`, `--atg-border`, `--atg-surface`, `--atg-surface-2`, `--atg-radius`, `--atg-gap`. There is no automatic dark mode; set dark values yourself.
+
+## Scanner
+
+Detection is a vendored ES-module build of [js-aruco2](https://github.com/damianofalcioni/js-aruco2) (MIT) fed with this package's own dictionaries, so it reads exactly what the generators print. Pose comes from POSIT with a pinhole model (principal point at the centre, focal length from the field-of-view field, no distortion): axis directions are reliable, distance is an estimate. Helpers: `createDetector`, `estimatePose`, `gizmoSegments`, `AXIS_CONVENTIONS`.
 
 ## Helpers (no React needed)
 

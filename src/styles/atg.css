@@ -320,3 +320,33 @@
     break-after: auto;
   }
 }
+
+/* Scanner: video with an overlay canvas that shares its box. */
+.atg-scanner {
+  align-items: stretch;
+}
+
+.atg-scanner__stage {
+  position: relative;
+  width: 100%;
+  background: #000;
+  border-radius: var(--atg-radius);
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+}
+
+.atg-scanner__video,
+.atg-scanner__overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.atg-scanner__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-variant-numeric: tabular-nums;
+}
