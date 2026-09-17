@@ -75,7 +75,9 @@ export const RefusesOversizedMarker: Story = {
     await expect(canvas.getByRole('alert')).toHaveTextContent('300 mm does not fit on A4');
     await expect(sizeInput).toHaveAttribute('aria-invalid', 'true');
     await expect(canvas.getByRole('button', { name: 'Print / PDF' })).toBeDisabled();
-    await expect(canvas.getByRole('link', { name: 'Download SVG' })).not.toHaveAttribute('href');
+    // Without an href the anchor is not a link any more, so it cannot download anything.
+    await expect(canvas.getByText('Download SVG')).not.toHaveAttribute('href');
+    await expect(canvas.getByText('Download SVG')).toHaveAttribute('aria-disabled', 'true');
     await expect(args.onChange).not.toHaveBeenCalledWith(expect.objectContaining({ sizeMm: 300 }));
 
     await userEvent.clear(sizeInput);
