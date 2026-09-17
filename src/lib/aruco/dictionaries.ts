@@ -12,7 +12,7 @@ export type ArucoDictionaryName =
   | 'april_36h10'
   | 'april_36h11';
 
-export type ArucoDictionaryGroup = 'Standard dictionaries' | 'AprilTag';
+export type ArucoDictionaryGroup = 'Standard' | 'AprilTag';
 
 export interface ArucoDictionary {
   name: ArucoDictionaryName;
@@ -27,7 +27,7 @@ export interface ArucoDictionary {
   count: number;
 }
 
-const STD = 'Standard dictionaries';
+const STD = 'Standard';
 const APRIL = 'AprilTag';
 
 const dictionary = (

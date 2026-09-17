@@ -1,21 +1,24 @@
 import { ArucoGenerator } from './components/ArucoGenerator';
+import { ArucoSheetGenerator } from './components/ArucoSheetGenerator';
+
+const credit = (
+  <span>
+    Dictionaries from OpenCV via{' '}
+    <a href="https://github.com/okalachev/arucogen">arucogen</a>.
+  </span>
+);
 
 function App() {
   return (
-    <main style={{ maxWidth: 900, margin: "0 auto" }}>
-      <h1 style={{ fontWeight: 'normal', textAlign: 'center', fontSize: 22, margin: '20px 20px 40px' }}>
-        ArUco markers generator
-      </h1>
-      <ArucoGenerator
-        footer={
-          <span>
-            See the{' '}
-            <a href="https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html">OpenCV documentation</a>{' '}
-            to learn about ArUco markers. Dictionaries from{' '}
-            <a href="https://github.com/okalachev/arucogen">arucogen</a> by Oleg Kalachev.
-          </span>
-        }
-      />
+    <main style={{ maxWidth: 1000, margin: '0 auto', padding: 16, display: 'grid', gap: 32 }}>
+      <section>
+        <h1 style={{ fontSize: 22, fontWeight: 600, margin: '0 0 12px' }}>Single marker</h1>
+        <ArucoGenerator footer={credit} />
+      </section>
+      <section>
+        <h1 style={{ fontSize: 22, fontWeight: 600, margin: '0 0 12px' }}>Label sheets</h1>
+        <ArucoSheetGenerator footer={credit} />
+      </section>
     </main>
   );
 }

@@ -7,9 +7,8 @@ export function ArucoMarker({
   id,
   sizeMm,
   fixPdfArtifacts = true,
-  className,
-  style,
   title,
+  ...svgProps
 }: ArucoMarkerProps) {
   const markerId = clampMarkerId(dictionary, id);
   const { width, height, rects } = markerGeometry(dictionary, markerId, fixPdfArtifacts);
@@ -25,8 +24,7 @@ export function ArucoMarker({
       height={size}
       role="img"
       aria-label={label}
-      className={className}
-      style={style}
+      {...svgProps}
     >
       <title>{label}</title>
       <rect x={0} y={0} width={width + 2} height={height + 2} fill="black" />

@@ -1,0 +1,322 @@
+/* Theme tokens (docs/spec.md §6.1). A host page overrides them on any ancestor. */
+.atg {
+  --atg-accent: #1d4ed8;
+  --atg-on-accent: #ffffff;
+  --atg-fg: #111827;
+  --atg-muted: #4b5563;
+  --atg-border: #d1d5db;
+  --atg-surface: #ffffff;
+  --atg-surface-2: #f3f4f6;
+  --atg-radius: 8px;
+  --atg-gap: 16px;
+
+  font: inherit;
+  line-height: 1.5;
+  color: var(--atg-fg);
+  container-type: inline-size;
+  box-sizing: border-box;
+}
+
+.atg *,
+.atg *::before,
+.atg *::after {
+  box-sizing: inherit;
+}
+
+/* Card: preview first, controls below; side by side when the card itself is wide enough. */
+.atg-card {
+  display: grid;
+  gap: var(--atg-gap);
+  padding: var(--atg-gap);
+  border: 1px solid var(--atg-border);
+  border-radius: var(--atg-radius);
+  background: var(--atg-surface);
+}
+
+@container (min-width: 720px) {
+  .atg-card {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+  }
+}
+
+.atg-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 240px;
+  padding: calc(var(--atg-gap) * 1.5);
+  border-radius: var(--atg-radius);
+  background: var(--atg-surface-2);
+}
+
+.atg-preview > svg[role='img'] {
+  width: min(100%, 320px);
+  height: auto;
+}
+
+.atg-preview .atg-sheet__page {
+  width: min(100%, 420px);
+  height: auto;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+}
+
+.atg-preview__id {
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.atg-preview__caption,
+.atg-help,
+.atg-summary {
+  margin: 0;
+  font-size: 14px;
+  color: var(--atg-muted);
+}
+
+.atg-preview__error {
+  margin: 0;
+  font-size: 14px;
+  color: #b91c1c;
+}
+
+/* Fields: label above input. */
+.atg-controls {
+  display: grid;
+  gap: var(--atg-gap);
+  align-content: start;
+}
+
+.atg-field {
+  display: grid;
+  gap: 4px;
+}
+
+.atg-field--row {
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.atg-field--row > .atg-field {
+  min-width: 0;
+}
+
+.atg-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.atg-input {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--atg-border);
+  border-radius: var(--atg-radius);
+  background: var(--atg-surface);
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 120ms;
+}
+
+.atg-input:focus-visible,
+.atg-btn:focus-visible,
+.atg-check input:focus-visible {
+  outline: 2px solid var(--atg-accent);
+  outline-offset: 2px;
+}
+
+/* Stepper: [−] [input] [+] */
+.atg-stepper {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+}
+
+.atg-stepper > .atg-input {
+  border-radius: 0;
+  text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.atg-stepper > .atg-input::-webkit-inner-spin-button,
+.atg-stepper > .atg-input::-webkit-outer-spin-button {
+  appearance: none;
+}
+
+.atg-stepper > .atg-btn {
+  padding: 0;
+}
+
+.atg-stepper > .atg-btn:first-child {
+  border-radius: var(--atg-radius) 0 0 var(--atg-radius);
+  border-right: 0;
+}
+
+.atg-stepper > .atg-btn:last-child {
+  border-radius: 0 var(--atg-radius) var(--atg-radius) 0;
+  border-left: 0;
+}
+
+/* Input with a unit suffix. */
+.atg-unit {
+  position: relative;
+}
+
+.atg-unit > .atg-input {
+  padding-right: 48px;
+}
+
+.atg-unit > span {
+  position: absolute;
+  top: 0;
+  right: 12px;
+  line-height: 44px;
+  color: var(--atg-muted);
+  pointer-events: none;
+}
+
+.atg-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 14px;
+}
+
+.atg-check input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--atg-accent);
+}
+
+/* Buttons and button-like links. */
+.atg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--atg-border);
+  border-radius: var(--atg-radius);
+  background: var(--atg-surface);
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 120ms, border-color 120ms;
+}
+
+.atg-btn:hover {
+  background: var(--atg-surface-2);
+}
+
+.atg-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.atg-btn--primary {
+  border-color: var(--atg-accent);
+  background: var(--atg-accent);
+  color: var(--atg-on-accent);
+}
+
+.atg-btn--primary:hover {
+  background: color-mix(in srgb, var(--atg-accent) 88%, #000);
+}
+
+.atg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.atg-actions > .atg-btn {
+  flex: 1 1 160px;
+  white-space: nowrap;
+}
+
+.atg-pager {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--atg-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atg-input,
+  .atg-btn {
+    transition: none;
+  }
+}
+
+/* Print areas live directly under <body> (portal) and are hidden on screen. */
+.atg-print {
+  display: none;
+}
+
+.atg-print__single {
+  --atg-print-size: 100mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--atg-print-size) * 0.1);
+  height: 100vh;
+  padding: 10mm;
+  overflow: hidden;
+  font-family: Arial, Helvetica, 'Liberation Sans', sans-serif;
+  color: #000;
+}
+
+.atg-print__id {
+  font-size: calc(var(--atg-print-size) * 0.14); /* cap height 10 % of the marker */
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.atg-print__caption {
+  margin-top: calc(var(--atg-print-size) * -0.05);
+  font-size: max(4.2mm, calc(var(--atg-print-size) * 0.07)); /* cap height 5 %, at least 3 mm */
+  line-height: 1;
+  color: #555;
+}
+
+@media print {
+  body.atg-printing {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    margin: 0 !important; /* beats host body rules of higher specificity */
+    padding: 0 !important;
+    background: #fff;
+  }
+
+  body.atg-printing > * {
+    display: none !important;
+  }
+
+  body.atg-printing > .atg-print.is-active {
+    display: block !important;
+  }
+
+  .atg-print .atg-sheet__page {
+    display: block;
+    break-after: page;
+  }
+
+  .atg-print .atg-sheet__page:last-child {
+    break-after: auto;
+  }
+}

@@ -169,6 +169,8 @@ If `w` is less than 1.5 × `h`, the label is near-square:
 - The marker is centered horizontally, with the quiet zone above it.
 - The ID is centered below the marker. The cap height of the ID is 15 % of `s`.
 
+The digit count for the font size is the digit count of the last ID in the range. Thus all labels of one range have one font size.
+
 The ID font is bold, with tabular figures. The font stack is `Arial, Helvetica, 'Liberation Sans', sans-serif`. The cap height of this font is 0.716 of the font size.
 
 ### 5.6 Pages
@@ -192,7 +194,7 @@ The root element of a UI component has the class `atg`. The stylesheet sets thes
 | `--atg-accent` | `#1d4ed8` | Primary button, focus ring, links. |
 | `--atg-on-accent` | `#ffffff` | Text on the accent color. |
 | `--atg-fg` | `#111827` | Text. |
-| `--atg-muted` | `#6b7280` | Helper text and captions. |
+| `--atg-muted` | `#4b5563` | Helper text and captions. |
 | `--atg-border` | `#d1d5db` | Borders of fields and of the card. |
 | `--atg-surface` | `#ffffff` | Background of the card. |
 | `--atg-surface-2` | `#f3f4f6` | Background of the preview pane. |
@@ -229,7 +231,7 @@ A host page can set the tokens on the component or on one of its ancestors. The 
 3. Set the marker size in millimeters.
 4. Make sure that the preview shows the correct ID.
 5. Click "Print / PDF".
-6. In the print dialog, set the scale to 100 %.
+6. In the print dialog, set the paper size to A4, the margins to none, and the scale to 100 %.
 7. Print the page, or save the page as a PDF file.
 
 ### 8.2 Print a sheet of labels
