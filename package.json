@@ -9,7 +9,15 @@
     "type": "git",
     "url": "git+https://github.com/o16s/aruco-tag-generator.git"
   },
-  "keywords": ["aruco", "apriltag", "marker", "fiducial", "opencv", "svg", "react"],
+  "keywords": [
+    "aruco",
+    "apriltag",
+    "marker",
+    "fiducial",
+    "opencv",
+    "svg",
+    "react"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -31,7 +39,8 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006 --host 0.0.0.0",
     "build-storybook": "storybook build",
-    "test:unit": "vitest run --config vitest.unit.config.ts"
+    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "build:pages": "vite build --config vite.config.pages.ts"
   },
   "dependencies": {},
   "peerDependencies": {
@@ -55,5 +64,6 @@
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vitest": "latest"
-  }
+  },
+  "homepage": "https://o16s.github.io/aruco-tag-generator/"
 }

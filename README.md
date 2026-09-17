@@ -2,6 +2,8 @@
 
 React components and pure TypeScript helpers for ArUco and AprilTag markers: single markers as SVG, and ranges of markers laid out on A4 label sheets (Avery presets or a custom label size). Marker dictionaries come from OpenCV via [arucogen](https://github.com/okalachev/arucogen). The UI, print layouts and layout rules are original and specified in [docs/spec.md](docs/spec.md).
 
+**Demo:** https://o16s.github.io/aruco-tag-generator/ · **Storybook:** https://o16s.github.io/aruco-tag-generator/storybook/
+
 ## Install
 
 ```bash
