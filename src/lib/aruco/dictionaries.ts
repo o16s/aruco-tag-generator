@@ -27,48 +27,35 @@ export interface ArucoDictionary {
   count: number;
 }
 
-interface DictionaryMeta {
-  name: ArucoDictionaryName;
-  label: string;
-  group: ArucoDictionaryGroup;
-  size: number;
-}
+const STD = 'Standard dictionaries';
+const APRIL = 'AprilTag';
 
-const META: readonly DictionaryMeta[] = [
-  { name: 'aruco', label: 'Original ArUco', group: 'Standard dictionaries', size: 5 },
-  { name: '4x4_1000', label: '4x4 (50, 100, 250, 1000)', group: 'Standard dictionaries', size: 4 },
-  { name: '5x5_1000', label: '5x5 (50, 100, 250, 1000)', group: 'Standard dictionaries', size: 5 },
-  { name: '6x6_1000', label: '6x6 (50, 100, 250, 1000)', group: 'Standard dictionaries', size: 6 },
-  { name: '7x7_1000', label: '7x7 (50, 100, 250, 1000)', group: 'Standard dictionaries', size: 7 },
-  { name: 'mip_36h12', label: 'MIP_36h12 (250)', group: 'Standard dictionaries', size: 6 },
-  { name: 'april_16h5', label: 'AprilTag 16h5 (30)', group: 'AprilTag', size: 4 },
-  { name: 'april_25h9', label: 'AprilTag 25h9 (35)', group: 'AprilTag', size: 5 },
-  { name: 'april_36h10', label: 'AprilTag 36h10 (2320)', group: 'AprilTag', size: 6 },
-  { name: 'april_36h11', label: 'AprilTag 36h11 (587)', group: 'AprilTag', size: 6 },
-];
+const dictionary = (
+  name: ArucoDictionaryName,
+  label: string,
+  group: ArucoDictionaryGroup,
+  size: number,
+): ArucoDictionary => ({ name, label, group, width: size, height: size, count: DICT_DATA[name].length });
 
 /** All supported dictionaries, in the same order as arucogen's dictionary select. */
-export const ARUCO_DICTIONARIES: readonly ArucoDictionary[] = META.map((meta) => ({
-  name: meta.name,
-  label: meta.label,
-  group: meta.group,
-  width: meta.size,
-  height: meta.size,
-  count: DICT_DATA[meta.name].length,
-}));
-
-export const ARUCO_DICTIONARY_GROUPS: readonly ArucoDictionaryGroup[] = [
-  'Standard dictionaries',
-  'AprilTag',
+export const ARUCO_DICTIONARIES: readonly ArucoDictionary[] = [
+  dictionary('aruco', 'Original ArUco', STD, 5),
+  dictionary('4x4_1000', '4x4 (50, 100, 250, 1000)', STD, 4),
+  dictionary('5x5_1000', '5x5 (50, 100, 250, 1000)', STD, 5),
+  dictionary('6x6_1000', '6x6 (50, 100, 250, 1000)', STD, 6),
+  dictionary('7x7_1000', '7x7 (50, 100, 250, 1000)', STD, 7),
+  dictionary('mip_36h12', 'MIP_36h12 (250)', STD, 6),
+  dictionary('april_16h5', 'AprilTag 16h5 (30)', APRIL, 4),
+  dictionary('april_25h9', 'AprilTag 25h9 (35)', APRIL, 5),
+  dictionary('april_36h10', 'AprilTag 36h10 (2320)', APRIL, 6),
+  dictionary('april_36h11', 'AprilTag 36h11 (587)', APRIL, 6),
 ];
+
+export const ARUCO_DICTIONARY_GROUPS: readonly ArucoDictionaryGroup[] = [STD, APRIL];
 
 export const DEFAULT_DICTIONARY: ArucoDictionaryName = '4x4_1000';
 
 const BY_NAME = new Map(ARUCO_DICTIONARIES.map((dictionary) => [dictionary.name, dictionary]));
-
-export function isArucoDictionaryName(value: unknown): value is ArucoDictionaryName {
-  return typeof value === 'string' && BY_NAME.has(value as ArucoDictionaryName);
-}
 
 export function getDictionary(name: ArucoDictionaryName): ArucoDictionary {
   const dictionary = BY_NAME.get(name);

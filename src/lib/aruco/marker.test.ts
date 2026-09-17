@@ -72,19 +72,6 @@ describe('download helpers', () => {
     expect(uri).toBe('data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=');
   });
 
-  it('encodes base64 without btoa', () => {
-    const original = globalThis.btoa;
-    // @ts-expect-error simulate an environment without btoa
-    globalThis.btoa = undefined;
-    try {
-      expect(markerSvgDataUri('<svg></svg>')).toBe('data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=');
-      expect(markerSvgDataUri('ab')).toBe('data:image/svg+xml;base64,YWI=');
-      expect(markerSvgDataUri('a')).toBe('data:image/svg+xml;base64,YQ==');
-    } finally {
-      globalThis.btoa = original;
-    }
-  });
-
   it('names files like arucogen', () => {
     expect(markerFileName('april_36h11', 42)).toBe('april_36h11-42.svg');
   });

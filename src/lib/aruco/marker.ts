@@ -68,21 +68,11 @@ export function markerRects(
   return rects;
 }
 
-export interface MarkerGeometry {
-  width: number;
-  height: number;
-  bits: number[];
-  rects: MarkerRect[];
-}
-
-export function markerGeometry(
-  name: ArucoDictionaryName,
-  id: number,
-  fixPdfArtifacts = true,
-): MarkerGeometry {
+/** Size and white rects for a marker id. */
+export function markerGeometry(name: ArucoDictionaryName, id: number, fixPdfArtifacts = true) {
   const { width, height } = getDictionary(name);
   const bits = decodeMarkerBits(getMarkerBytes(name, id), width, height);
-  return { width, height, bits, rects: markerRects(bits, width, height, fixPdfArtifacts) };
+  return { width, height, rects: markerRects(bits, width, height, fixPdfArtifacts) };
 }
 
 /** Standalone SVG markup for a marker. Output matches arucogen's `generateMarkerSvg`. */
@@ -110,34 +100,9 @@ export function markerSvgString(
   );
 }
 
-const BASE64_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-
-/** Minimal base64 encoder for environments without `btoa` (e.g. Node < 16, workers). */
-const encodeBase64 = (bytes: Uint8Array): string => {
-  let out = '';
-  for (let i = 0; i < bytes.length; i += 3) {
-    const a = bytes[i];
-    const b = i + 1 < bytes.length ? bytes[i + 1] : 0;
-    const c = i + 2 < bytes.length ? bytes[i + 2] : 0;
-    const triple = (a << 16) | (b << 8) | c;
-    out += BASE64_ALPHABET[(triple >> 18) & 63];
-    out += BASE64_ALPHABET[(triple >> 12) & 63];
-    out += i + 1 < bytes.length ? BASE64_ALPHABET[(triple >> 6) & 63] : '=';
-    out += i + 2 < bytes.length ? BASE64_ALPHABET[triple & 63] : '=';
-  }
-  return out;
-};
-
-const toBase64 = (value: string): string => {
-  if (typeof btoa === 'function') {
-    return btoa(value);
-  }
-  return encodeBase64(new TextEncoder().encode(value));
-};
-
 /** `data:` URI usable as a download `href` for an SVG string. */
 export function markerSvgDataUri(svg: string): string {
-  return `data:image/svg+xml;base64,${toBase64(svg)}`;
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
 
 /** Download file name, e.g. `4x4_1000-0.svg`, same as arucogen. */

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { ArucoMarker } from '../ArucoMarker';
 import {
   ARUCO_DICTIONARIES,
@@ -6,105 +6,60 @@ import {
   clampMarkerId,
   DEFAULT_DICTIONARY,
   getDictionary,
-  isArucoDictionaryName,
   type ArucoDictionaryName,
 } from '../../lib/aruco/dictionaries';
 import { markerFileName, markerSvgDataUri, markerSvgString } from '../../lib/aruco/marker';
-import { MAX_SIZE_MM, MIN_SIZE_MM } from './constants';
 import { printMarker } from './printMarker';
 import type { ArucoGeneratorProps, ArucoGeneratorValue } from './types';
 import './ArucoGenerator.css';
 
-const clampSize = (value: number): number => {
-  if (!Number.isFinite(value)) {
-    return MIN_SIZE_MM;
-  }
-  return Math.min(Math.max(value, MIN_SIZE_MM), MAX_SIZE_MM);
-};
+const MIN_SIZE_MM = 10;
+const MAX_SIZE_MM = 5000;
+
+const clampSize = (value: number): number =>
+  Math.min(Math.max(value || MIN_SIZE_MM, MIN_SIZE_MM), MAX_SIZE_MM);
 
 export function ArucoGenerator({
   defaultDictionary = DEFAULT_DICTIONARY,
   defaultId = 0,
   defaultSizeMm = 100,
   onChange,
-  showSaveButton = true,
-  showPrintButton = true,
   fixPdfArtifacts = true,
   className,
   footer,
 }: ArucoGeneratorProps) {
-  const [dictionary, setDictionary] = useState<ArucoDictionaryName>(defaultDictionary);
-  const [id, setId] = useState<number>(() => clampMarkerId(defaultDictionary, defaultId));
-  const [sizeMm, setSizeMm] = useState<number>(() => clampSize(defaultSizeMm));
-  const [idText, setIdText] = useState<string>(() => String(clampMarkerId(defaultDictionary, defaultId)));
-  const [sizeText, setSizeText] = useState<string>(() => String(clampSize(defaultSizeMm)));
-
+  const [value, setValue] = useState<ArucoGeneratorValue>(() => ({
+    dictionary: defaultDictionary,
+    id: clampMarkerId(defaultDictionary, defaultId),
+    sizeMm: clampSize(defaultSizeMm),
+  }));
+  const idInput = useRef<HTMLInputElement>(null);
   const uid = useId();
-  const dictionaryInfo = getDictionary(dictionary);
-  const maxId = dictionaryInfo.count - 1;
+  const { dictionary, id, sizeMm } = value;
 
-  useEffect(() => {
-    onChange?.({ dictionary, id, sizeMm });
-  }, [dictionary, id, sizeMm, onChange]);
-
-  const handleDictionaryChange = useCallback(
-    (value: string) => {
-      if (!isArucoDictionaryName(value)) {
-        return;
-      }
-      setDictionary(value);
-      const clamped = clampMarkerId(value, id);
-      if (clamped !== id) {
-        setId(clamped);
-        setIdText(String(clamped));
-      }
-    },
-    [id],
-  );
-
-  const handleIdChange = useCallback(
-    (value: string) => {
-      setIdText(value);
-      const parsed = Number(value);
-      if (value.trim() === '' || !Number.isFinite(parsed)) {
-        return;
-      }
-      const clamped = clampMarkerId(dictionary, parsed);
-      setId(clamped);
-      if (clamped !== parsed) {
-        setIdText(String(clamped));
-      }
-    },
-    [dictionary],
-  );
-
-  const handleSizeChange = useCallback((value: string) => {
-    setSizeText(value);
-    const parsed = Number(value);
-    if (value.trim() === '' || !Number.isFinite(parsed)) {
-      return;
+  // Inputs are uncontrolled, like arucogen: read the form on every change and clamp.
+  const update = (form: HTMLFormElement) => {
+    const data = new FormData(form);
+    const nextDictionary = String(data.get('dict')) as ArucoDictionaryName;
+    const nextId = clampMarkerId(nextDictionary, Number(data.get('id')));
+    if (idInput.current && Number(idInput.current.value) !== nextId) {
+      idInput.current.value = String(nextId);
     }
-    setSizeMm(clampSize(parsed));
-  }, []);
-
-  const svgHref = useMemo(
-    () => markerSvgDataUri(markerSvgString(dictionary, id, { fixPdfArtifacts, sizeMm })),
-    [dictionary, id, fixPdfArtifacts, sizeMm],
-  );
-
-  const value: ArucoGeneratorValue = { dictionary, id, sizeMm };
+    const next = { dictionary: nextDictionary, id: nextId, sizeMm: clampSize(Number(data.get('size'))) };
+    setValue(next);
+    onChange?.(next);
+  };
 
   return (
-    <section className={`aruco-generator ${className ?? ''}`.trim()} data-value={JSON.stringify(value)}>
-      <form className="aruco-generator__form" onSubmit={(event) => event.preventDefault()}>
+    <section className={`aruco-generator ${className ?? ''}`.trim()}>
+      <form
+        className="aruco-generator__form"
+        onSubmit={(event) => event.preventDefault()}
+        onChange={(event) => update(event.currentTarget)}
+      >
         <div className="aruco-generator__field">
           <label htmlFor={`${uid}-dict`}>Dictionary:</label>
-          <select
-            id={`${uid}-dict`}
-            name="dict"
-            value={dictionary}
-            onChange={(event) => handleDictionaryChange(event.target.value)}
-          >
+          <select id={`${uid}-dict`} name="dict" defaultValue={dictionary}>
             {ARUCO_DICTIONARY_GROUPS.map((group) => (
               <optgroup key={group} label={group}>
                 {ARUCO_DICTIONARIES.filter((entry) => entry.group === group).map((entry) => (
@@ -123,11 +78,10 @@ export function ArucoGenerator({
             name="id"
             type="number"
             min={0}
-            max={maxId}
+            max={getDictionary(dictionary).count - 1}
             step={1}
-            value={idText}
-            onChange={(event) => handleIdChange(event.target.value)}
-            onBlur={() => setIdText(String(id))}
+            defaultValue={id}
+            ref={idInput}
           />
         </div>
         <div className="aruco-generator__field">
@@ -138,9 +92,7 @@ export function ArucoGenerator({
             type="number"
             min={MIN_SIZE_MM}
             max={MAX_SIZE_MM}
-            value={sizeText}
-            onChange={(event) => handleSizeChange(event.target.value)}
-            onBlur={() => setSizeText(String(sizeMm))}
+            defaultValue={sizeMm}
           />
         </div>
       </form>
@@ -152,27 +104,19 @@ export function ArucoGenerator({
         </div>
       </div>
 
-      {showSaveButton || showPrintButton ? (
-        <div className="aruco-generator__tools">
-          {showSaveButton ? (
-            <>
-              <a href={svgHref} download={markerFileName(dictionary, id)}>
-                Save
-              </a>{' '}
-              this marker as SVG
-            </>
-          ) : null}
-          {showSaveButton && showPrintButton ? ', or ' : null}
-          {showPrintButton ? (
-            <>
-              <button type="button" onClick={printMarker}>
-                open
-              </button>{' '}
-              standard browser&apos;s print dialog to print or get the PDF.
-            </>
-          ) : null}
-        </div>
-      ) : null}
+      <div className="aruco-generator__tools">
+        <a
+          href={markerSvgDataUri(markerSvgString(dictionary, id, { fixPdfArtifacts, sizeMm }))}
+          download={markerFileName(dictionary, id)}
+        >
+          Save
+        </a>{' '}
+        this marker as SVG, or{' '}
+        <button type="button" onClick={printMarker}>
+          open
+        </button>{' '}
+        standard browser&apos;s print dialog to print or get the PDF.
+      </div>
 
       {footer ? <div className="aruco-generator__footer">{footer}</div> : null}
     </section>

@@ -1,4 +1,4 @@
-import { PRINTING_CLASS } from './constants';
+const PRINTING_CLASS = 'aruco-generator-printing';
 
 /**
  * Open the browser print dialog showing only the contents of `.aruco-generator__print-area`
@@ -6,7 +6,7 @@ import { PRINTING_CLASS } from './constants';
  * host page. No-op outside a browser.
  */
 export function printMarker(): void {
-  if (typeof window === 'undefined' || typeof document === 'undefined') {
+  if (typeof window === 'undefined') {
     return;
   }
   const { body } = document;

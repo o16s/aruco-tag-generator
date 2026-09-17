@@ -19,7 +19,7 @@
   text-align: right;
   vertical-align: middle;
   font-size: 15px;
-  color: #858585;
+  color: #6b6b6b;
 }
 
 .aruco-generator__field select,
@@ -71,7 +71,7 @@
 .aruco-generator__footer {
   margin: 20px;
   font-size: 13px;
-  color: #919191;
+  color: #6b6b6b;
 }
 
 @media print {

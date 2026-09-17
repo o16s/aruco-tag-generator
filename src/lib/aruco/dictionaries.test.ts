@@ -5,7 +5,6 @@ import {
   clampMarkerId,
   getDictionary,
   getMarkerBytes,
-  isArucoDictionaryName,
 } from './dictionaries';
 
 // Counts as declared by arucogen's index.html (`data-number`, default 1000).
@@ -46,12 +45,6 @@ describe('lookups', () => {
     expect(getDictionary('april_16h5').count).toBe(30);
     // @ts-expect-error intentional invalid name
     expect(() => getDictionary('nope')).toThrow(/Unknown ArUco dictionary/);
-  });
-
-  it('isArucoDictionaryName narrows strings', () => {
-    expect(isArucoDictionaryName('aruco')).toBe(true);
-    expect(isArucoDictionaryName('4x4_50')).toBe(false);
-    expect(isArucoDictionaryName(4)).toBe(false);
   });
 
   it('getMarkerBytes returns arucogen bytes and range-checks ids', () => {

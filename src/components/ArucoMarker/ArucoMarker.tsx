@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { clampMarkerId } from '../../lib/aruco/dictionaries';
 import { markerGeometry } from '../../lib/aruco/marker';
 import type { ArucoMarkerProps } from './types';
@@ -13,10 +12,7 @@ export function ArucoMarker({
   title,
 }: ArucoMarkerProps) {
   const markerId = clampMarkerId(dictionary, id);
-  const { width, height, rects } = useMemo(
-    () => markerGeometry(dictionary, markerId, fixPdfArtifacts),
-    [dictionary, markerId, fixPdfArtifacts],
-  );
+  const { width, height, rects } = markerGeometry(dictionary, markerId, fixPdfArtifacts);
   const label = title ?? `${dictionary} marker ${markerId}`;
   const size = sizeMm === undefined ? undefined : `${sizeMm}mm`;
 
@@ -29,22 +25,13 @@ export function ArucoMarker({
       height={size}
       role="img"
       aria-label={label}
-      data-dictionary={dictionary}
-      data-marker-id={markerId}
       className={className}
       style={style}
     >
       <title>{label}</title>
       <rect x={0} y={0} width={width + 2} height={height + 2} fill="black" />
       {rects.map((rect, index) => (
-        <rect
-          key={index}
-          x={rect.x}
-          y={rect.y}
-          width={rect.width}
-          height={rect.height}
-          fill="white"
-        />
+        <rect key={index} x={rect.x} y={rect.y} width={rect.width} height={rect.height} fill="white" />
       ))}
     </svg>
   );

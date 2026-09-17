@@ -20,10 +20,6 @@ export const WithAprilTagDefault: Story = {
   args: { defaultDictionary: 'april_36h11', defaultId: 7, defaultSizeMm: 50 },
 };
 
-export const WithoutTools: Story = {
-  args: { showSaveButton: false, showPrintButton: false },
-};
-
 export const WithFooter: Story = {
   args: {
     footer: (

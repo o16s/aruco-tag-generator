@@ -14,12 +14,8 @@ export interface ArucoGeneratorProps {
   defaultId?: number;
   /** Initial marker size in millimetres. Default `100`. */
   defaultSizeMm?: number;
-  /** Called whenever dictionary, id or size changes. */
+  /** Called after the user changes dictionary, id or size. */
   onChange?: (value: ArucoGeneratorValue) => void;
-  /** Show the "Save as SVG" link. Default `true`. */
-  showSaveButton?: boolean;
-  /** Show the "open print dialog" button. Default `true`. */
-  showPrintButton?: boolean;
   /** Overlap neighbouring white cells to avoid seams in PDF/print output. Default `true`. */
   fixPdfArtifacts?: boolean;
   className?: string;
