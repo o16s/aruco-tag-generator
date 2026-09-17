@@ -67,6 +67,9 @@ export function ArucoSheetGenerator({
     }
   }
   const pageIndex = Math.min(page, Math.max(pages.length - 1, 0));
+  const sheetName = custom ? 'custom' : getPreset(sheet).code;
+  const pageFooter = (index: number, total: number) =>
+    `${dictionary} · marker ${markerSize.toFixed(1)} mm · label ${geometry.width} × ${geometry.height} mm (${sheetName}) · IDs ${pages[index]?.[0] ?? from}–${pages[index]?.at(-1) ?? to} · page ${index + 1} of ${total}`;
 
   const update = () => {
     if (!form.current) {
@@ -130,6 +133,7 @@ export function ArucoSheetGenerator({
             pageIndex={pageIndex}
             digits={digits}
             cutLines={custom && cutLines}
+            footer={pageFooter}
           />
         )}
         {pages.length > 1 ? (
@@ -282,7 +286,7 @@ export function ArucoSheetGenerator({
 
       <PrintPortal nodeRef={printNode}>
         {error ? null : (
-          <ArucoLabelSheet dictionary={dictionary} pages={pages} geometry={geometry} digits={digits} cutLines={custom && cutLines} />
+          <ArucoLabelSheet dictionary={dictionary} pages={pages} geometry={geometry} digits={digits} cutLines={custom && cutLines} footer={pageFooter} />
         )}
       </PrintPortal>
     </section>

@@ -40,6 +40,7 @@ export const RangeAndPages: Story = {
 
     await userEvent.click(canvas.getByRole('button', { name: 'Next' }));
     await expect(canvas.getByText('Page 2 of 2')).toBeVisible();
+    await expect(canvas.getByText('4x4_1000 · marker 28.6 mm · label 63.5 × 38.1 mm (L7160) · IDs 21–41 · page 2 of 2')).toBeVisible();
     await expect(canvas.getByRole('img', { name: 'Label sheet page 2 of 2' })).toBeVisible();
     await expect(args.onChange).toHaveBeenLastCalledWith(expect.objectContaining({ from: 0, to: 41 }));
 

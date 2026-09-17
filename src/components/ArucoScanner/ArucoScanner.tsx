@@ -158,6 +158,8 @@ export function ArucoScanner({
   const [cameraCount, setCameraCount] = useState(0);
   const [markers, setMarkers] = useState<ScannedMarker[]>([]);
   const [fullscreen, setFullscreen] = useState(false);
+  const [cameraLabel, setCameraLabel] = useState<string | null>(null);
+  const fovInput = useRef<HTMLInputElement>(null);
   const stage = useRef<HTMLDivElement>(null);
 
   const video = useRef<HTMLVideoElement>(null);
@@ -202,6 +204,10 @@ export function ArucoScanner({
       }
       const devices = await navigator.mediaDevices.enumerateDevices();
       setCameraCount(devices.filter((device) => device.kind === 'videoinput').length);
+      // The track reports resolution and facing mode, but no browser exposes focal length or field of view.
+      const track = media.getVideoTracks()[0];
+      const info = track?.getSettings();
+      setCameraLabel(track ? `${track.label || 'Camera'} · ${info?.width ?? '?'} × ${info?.height ?? '?'}` : null);
       setRunning(true);
     } catch (cause) {
       setError(cameraError(cause));
@@ -233,6 +239,26 @@ export function ArucoScanner({
     document.addEventListener('fullscreenchange', sync);
     return () => document.removeEventListener('fullscreenchange', sync);
   }, []);
+
+  /**
+   * Field of view from one measurement: distance scales linearly with focal length, so
+   * f_true = f_current × measured / estimated. Needs exactly one marker in view.
+   */
+  const calibrate = () => {
+    const marker = markers[0];
+    const data = form.current ? new FormData(form.current) : null;
+    const measured = Number(data?.get('measured'));
+    if (!marker || markers.length !== 1 || !(measured > 0)) {
+      return;
+    }
+    const width = overlay.current?.width || 1;
+    const focal = focalFromFov(width, settings.fovDeg) * (measured / marker.distanceMm);
+    const fovDeg = clampNumber((2 * Math.atan(width / 2 / focal) * 180) / Math.PI, 10, 170);
+    if (fovInput.current) {
+      fovInput.current.value = fovDeg.toFixed(1);
+    }
+    setSettings({ ...settings, fovDeg });
+  };
 
   const switchCamera = () => {
     const next = facing === 'environment' ? 'user' : 'environment';
@@ -413,12 +439,29 @@ export function ArucoScanner({
                 Camera field of view
               </label>
               <div className="atg-unit">
-                <input id={`${uid}-fov`} className="atg-input" name="fov" type="number" inputMode="decimal" min={10} max={170} defaultValue={settings.fovDeg} />
+                <input ref={fovInput} id={`${uid}-fov`} className="atg-input" name="fov" type="number" inputMode="decimal" min={10} max={170} step="any" defaultValue={settings.fovDeg} />
                 <span aria-hidden="true">°</span>
               </div>
             </div>
           </div>
-          <p className="atg-help">Marker size and field of view only affect the distance estimate. 60° is typical for a phone camera.</p>
+          <p className="atg-help">
+            Marker size and field of view only affect the distance estimate. Browsers do not report the field of view
+            {cameraLabel ? ` (${cameraLabel})` : ''}. To calibrate, hold one marker at a measured distance and enter it here.
+          </p>
+          <div className="atg-field atg-field--row">
+            <div className="atg-field">
+              <label className="atg-label" htmlFor={`${uid}-measured`}>
+                Measured distance
+              </label>
+              <div className="atg-unit">
+                <input id={`${uid}-measured`} className="atg-input" name="measured" type="number" inputMode="decimal" min={1} step="any" />
+                <span aria-hidden="true">mm</span>
+              </div>
+            </div>
+            <button type="button" className="atg-btn" style={{ alignSelf: 'end' }} onClick={calibrate} disabled={markers.length !== 1}>
+              Calibrate field of view
+            </button>
+          </div>
         </form>
       </div>
     </section>

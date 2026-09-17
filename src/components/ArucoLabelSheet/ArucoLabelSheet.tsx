@@ -1,5 +1,5 @@
 import type { ArucoDictionaryName } from '../../lib/aruco/dictionaries';
-import { A4, labelOrigin, type SheetGeometry } from '../../lib/aruco/label';
+import { A4, LABEL_FONT, labelOrigin, type SheetGeometry } from '../../lib/aruco/label';
 import { ArucoLabel } from '../ArucoLabel';
 
 export interface ArucoLabelSheetProps {
@@ -11,6 +11,8 @@ export interface ArucoLabelSheetProps {
   pageIndex?: number;
   digits?: number;
   cutLines?: boolean;
+  /** Small muted line in the bottom page margin, e.g. dictionary and marker size. */
+  footer?: (pageIndex: number, pageCount: number) => string;
   className?: string;
 }
 
@@ -22,6 +24,7 @@ export function ArucoLabelSheet({
   pageIndex,
   digits,
   cutLines,
+  footer,
   className,
 }: ArucoLabelSheetProps) {
   const shown = pageIndex === undefined ? pages : pages.slice(pageIndex, pageIndex + 1);
@@ -56,6 +59,18 @@ export function ArucoLabelSheet({
               />
             );
           })}
+          {footer ? (
+            <text
+              x={A4.width / 2}
+              y={A4.height - 2}
+              fontSize={2.2}
+              fontFamily={LABEL_FONT}
+              fill="#6b7280"
+              textAnchor="middle"
+            >
+              {footer(pageIndex ?? page, pages.length)}
+            </text>
+          ) : null}
         </svg>
       ))}
     </>

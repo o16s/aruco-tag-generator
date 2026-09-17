@@ -181,6 +181,8 @@ The ID font is bold, with tabular figures. The font stack is `Arial, Helvetica, 
 
 One page holds `columns × rows` labels. The page count is the label count divided by the labels per page, rounded up. The maximum page count is 100. If the range needs more pages, the component shows an error and does not print.
 
+Each page has a footer line in the bottom margin, in a small muted font. The footer shows the dictionary, the marker size, the label size and sheet name, the IDs on the page, and the page number. The footer prints with the page.
+
 The preview shows one page at a time. If there is more than one page, the preview shows "Page 1 of N" and two buttons, "Previous" and "Next".
 
 ### 5.7 Print layout for sheets
@@ -293,6 +295,8 @@ The component uses the same card as the generators. The preview pane shows the v
 
 The marker size and the field of view change only the distance estimate. They do not change the ID, the dictionary, or the direction of the axes.
 
+A browser reports the resolution and the facing mode of the camera, but not the focal length or the field of view. Thus the component cannot read the field of view automatically. The component offers a calibration instead: with one marker in view, the user enters the measured distance to the marker and clicks "Calibrate field of view". The component then sets the field of view so that the estimate is equal to the measured distance.
+
 ### 10.3 Overlay
 
 For each marker, the overlay shows:
@@ -336,5 +340,5 @@ As a result:
 4. If the browser asks for permission, allow the camera.
 5. Point the camera at the marker. Make sure that the marker has a white margin around its black border.
 6. Read the ID and the dictionary on the overlay.
-7. If the distance is important, set the marker size and the field of view of the camera.
+7. If the distance is important, set the marker size. Then measure the distance to the marker, enter it in "Measured distance", and click "Calibrate field of view".
 8. If the software that uses the pose expects the AprilTag convention, select "AprilTag".
