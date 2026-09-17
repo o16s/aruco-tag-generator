@@ -1,7 +1,14 @@
 import type { ArucoDictionaryName } from '../aruco/dictionaries';
-import { AR, type ARImage } from '../vendor/js-aruco2/aruco.js';
+import { AR } from '../vendor/js-aruco2/aruco.js';
 import type { Point2 } from './pose';
-import { registerDictionaries } from './dictionaries';
+import { registerDictionary } from './dictionaries';
+
+/** RGBA pixels, like `ImageData`. */
+export interface DetectorImage {
+  width: number;
+  height: number;
+  data: Uint8ClampedArray;
+}
 
 export interface DetectedMarker {
   id: number;
@@ -13,12 +20,12 @@ export interface DetectedMarker {
 
 export interface MarkerDetector {
   dictionary: ArucoDictionaryName;
-  detect(image: ARImage): DetectedMarker[];
+  detect(image: DetectorImage): DetectedMarker[];
 }
 
 /** A detector for one dictionary. Uses the same marker bits that the generator prints. */
 export function createDetector(dictionary: ArucoDictionaryName): MarkerDetector {
-  registerDictionaries();
+  registerDictionary(dictionary);
   const detector = new AR.Detector({ dictionaryName: dictionary });
   return {
     dictionary,

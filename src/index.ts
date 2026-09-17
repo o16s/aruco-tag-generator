@@ -44,7 +44,7 @@ export type { CustomSheet, LabelLayout, LabelSheetPreset, SheetGeometry } from '
 export { createDetector } from './lib/scanner/detect';
 export { createTracker } from './lib/scanner/track';
 export type { MarkerTracker, TrackedMarker, TrackerOptions } from './lib/scanner/track';
-export type { DetectedMarker, MarkerDetector } from './lib/scanner/detect';
+export type { DetectedMarker, DetectorImage, MarkerDetector } from './lib/scanner/detect';
 export {
   AXIS_COLORS,
   AXIS_CONVENTIONS,

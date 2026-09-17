@@ -184,6 +184,7 @@ export function ArucoScanner({
   const overlay = useRef<HTMLCanvasElement>(null);
   const form = useRef<HTMLFormElement>(null);
   const stream = useRef<MediaStream | null>(null);
+  const startSeq = useRef(0);
   const latest = useRef({ settings, onDetect });
   useEffect(() => {
     latest.current = { settings, onDetect };
@@ -209,12 +210,18 @@ export function ArucoScanner({
       setError('This browser does not support camera access.');
       return;
     }
+    const seq = ++startSeq.current;
     try {
       stop();
       const media = await navigator.mediaDevices.getUserMedia({
         video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       });
+      if (seq !== startSeq.current) {
+        // Unmounted or restarted while waiting: do not keep this camera open.
+        media.getTracks().forEach((track) => track.stop());
+        return;
+      }
       stream.current = media;
       if (video.current) {
         video.current.srcObject = media;
@@ -237,7 +244,7 @@ export function ArucoScanner({
     if (!el) {
       return;
     }
-    if (document.fullscreenElement) {
+    if (document.fullscreenElement === el) {
       await document.exitFullscreen();
       return;
     }
@@ -361,7 +368,13 @@ export function ArucoScanner({
     };
   }, [source, running, enterHits, holdMs, alpha]);
 
-  useEffect(() => stop, []);
+  useEffect(
+    () => () => {
+      startSeq.current += 1; // invalidates a start() that is still awaiting the camera
+      stop();
+    },
+    [],
+  );
 
   const update = () => {
     if (!form.current) {

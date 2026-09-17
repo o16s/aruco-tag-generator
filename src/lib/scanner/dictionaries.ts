@@ -1,5 +1,5 @@
 import { DICT_DATA } from '../aruco/dictData';
-import { ARUCO_DICTIONARIES, type ArucoDictionaryName } from '../aruco/dictionaries';
+import { getDictionary, type ArucoDictionaryName } from '../aruco/dictionaries';
 import { decodeMarkerBits } from '../aruco/marker';
 import { AR } from '../vendor/js-aruco2/aruco.js';
 
@@ -31,19 +31,18 @@ function minHammingDistance(name: ArucoDictionaryName, width: number, height: nu
   return min;
 }
 
-let registered = false;
+const registered = new Set<ArucoDictionaryName>();
 
-/** Register every generator dictionary with the vendored detector, under the same names. */
-export function registerDictionaries(): void {
-  if (registered) {
+/** Register one generator dictionary with the vendored detector, under the same name, once. */
+export function registerDictionary(name: ArucoDictionaryName): void {
+  if (registered.has(name)) {
     return;
   }
-  for (const { name, width, height } of ARUCO_DICTIONARIES) {
-    AR.DICTIONARIES[name] = {
-      nBits: width * height,
-      tau: tauFor(minHammingDistance(name, width, height)),
-      codeList: DICT_DATA[name],
-    };
-  }
-  registered = true;
+  const { width, height } = getDictionary(name);
+  AR.DICTIONARIES[name] = {
+    nBits: width * height,
+    tau: tauFor(minHammingDistance(name, width, height)),
+    codeList: DICT_DATA[name],
+  };
+  registered.add(name);
 }

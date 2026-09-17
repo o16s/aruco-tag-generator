@@ -1,7 +1,7 @@
 {
   "name": "@o16s/aruco-tag-generator",
   "version": "0.1.0",
-  "description": "React components and helpers for generating ArUco / AprilTag markers as SVG",
+  "description": "React components for ArUco / AprilTag markers: SVG generation, A4 label sheets, and a camera scanner with pose gizmo",
   "type": "module",
   "private": false,
   "license": "MIT",
