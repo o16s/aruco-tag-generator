@@ -120,6 +120,11 @@ body {
   gap: 16px;
 }
 
+/* The hidden attribute's UA rule loses to the display above; make it win. */
+.app__panel[hidden] {
+  display: none;
+}
+
 .app__heading {
   margin: 8px 0 0;
   font-size: 18px;
