@@ -85,7 +85,7 @@ function SyntheticScene({ tiltX, turnY, ...tracker }: { tiltX: number; turnY: nu
 export const SyntheticImage: Story = {
   render: (args) => <SyntheticScene tiltX={35} turnY={-20} {...args} />,
   play: async ({ canvas }) => {
-    await waitFor(() => expect(canvas.getByText(/ID 42 · 4x4_1000 · \d\.\d\d m/)).toBeVisible(), { timeout: 10000 });
+    await waitFor(() => expect(canvas.getByText(/ID 42 · 4x4_1000 · \d\.\d\d m · \d+ px/)).toBeVisible(), { timeout: 10000 });
     await expect(canvas.getByText(/ID 42 · 4x4_1000/)).toHaveAttribute('data-detections', '1');
   },
 };

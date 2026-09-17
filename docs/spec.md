@@ -292,6 +292,8 @@ The component uses the same card as the generators. The preview pane shows the v
 3. Axis convention. A select with the conventions from section 10.4. A helper text shows the colors and a description of the selected convention.
 4. Marker size, in millimeters. The printed side of the marker, border included.
 5. Camera field of view, in degrees. The horizontal angle of view of the camera.
+6. Detection width, in pixels. The component downscales each frame to this width before detection. The default is 640 px. A lower value simulates a camera with a lower resolution. A helper text shows the minimum marker size in pixels for the selected dictionary.
+7. "Show detector view". When on, the overlay shows the downscaled frame instead of the video, so the user sees the pixels that the detector reads.
 
 The marker size and the field of view change only the distance estimate. They do not change the ID, the dictionary, or the direction of the axes.
 
@@ -302,7 +304,7 @@ A browser reports the resolution and the facing mode of the camera, but not the 
 For each marker, the overlay shows:
 
 - A green outline on the four corners.
-- A label with the ID, the dictionary, and the distance in meters, for example "ID 42 · 4x4_1000 · 0.35 m".
+- A label with the ID, the dictionary, and the distance in meters, for example "ID 42 · 4x4_1000 · 0.35 m". The status line also shows the marker size in pixels of the downscaled frame, for example "· 63 px".
 - Three arrows from the center of the marker: X in red, Y in green, Z in blue. Each arrow has its letter at the tip. The length of each arrow is half of the marker size.
 
 A status line below the video shows the markers in view on one line, nearest first. For one marker it shows the same text as the label. For more markers it shows the count, the dictionary, and up to 8 IDs with their distances, then "+N more". The line does not grow with time.
@@ -328,7 +330,7 @@ As a result:
 
 - The direction of the axes is correct for the marker in view.
 - The distance is an estimate. The error grows when the field of view value is wrong.
-- The detector reads the marker bits from a warped square of 8 pixels per module. A marker must be larger than about 40 pixels in the frame.
+- The detector reads the marker bits from a warped square of 8 pixels per module. A marker must span at least 8 pixels per module in the downscaled frame: 48 px for a 4x4 dictionary, 72 px for a 7x7 dictionary.
 - A tracker filters the detections of each frame. A marker appears after two consecutive detections. A marker stays for 200 ms after its last detection, drawn at its last pose with a lighter outline. The corners of a marker are smoothed with a weight of 0.6 for the new detection. This removes most false positives and most flicker, at the cost of one frame of delay and a short hold when a marker leaves the view.
 - The `coasting` flag of a marker is true while the tracker holds it without a detection.
 - The props `enterHits`, `holdMs`, and `alpha` set the three tracker values. The UI does not show them.

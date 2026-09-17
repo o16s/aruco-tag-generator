@@ -7,6 +7,8 @@ export interface ScannedMarker extends TrackedMarker {
   pose: MarkerPose;
   /** Distance from the camera to the marker centre in millimetres (pinhole estimate). */
   distanceMm: number;
+  /** Marker edge length in pixels of the downscaled frame the detector processed. */
+  edgePx: number;
 }
 
 /** An element the scanner reads frames from instead of the camera (stories, tests). */

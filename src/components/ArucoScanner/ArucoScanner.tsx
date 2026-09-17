@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { DEFAULT_DICTIONARY, type ArucoDictionaryName } from '../../lib/aruco/dictionaries';
+import { markerModules } from '../../lib/aruco/label';
 import { clampNumber } from '../../lib/number';
 import { createDetector, type MarkerDetector } from '../../lib/scanner/detect';
 import { createTracker } from '../../lib/scanner/track';
@@ -15,13 +16,19 @@ import {
 import { DictionarySelect } from '../atg';
 import type { ArucoScannerProps, ScannedMarker, ScannerSource } from './types';
 
-const MAX_DETECT_WIDTH = 640;
+/** Frame widths the detector can run at. Lower values simulate a low-resolution camera. */
+const DETECT_WIDTHS = [160, 240, 320, 480, 640, 960, 1280] as const;
+const DEFAULT_DETECT_WIDTH = 640;
+/** The vendored detector reads 8 px per module, so a marker needs at least modules × 8 px. */
+const PX_PER_MODULE = 8;
 
 interface Settings {
   dictionary: ArucoDictionaryName;
   convention: string;
   markerSizeMm: number;
   fovDeg: number;
+  detectWidthPx: number;
+  showDetectorView: boolean;
 }
 
 const sourceSize = (source: ScannerSource): { width: number; height: number } => {
@@ -53,10 +60,11 @@ function statusText(markers: ScannedMarker[], active: boolean): string {
     return active ? 'No marker in view.' : '';
   }
   const metres = (m: ScannedMarker) => `${(m.distanceMm / 1000).toFixed(2)} m`;
+  const px = (m: ScannedMarker) => `${Math.round(m.edgePx)} px`;
   if (markers.length === 1) {
-    return `ID ${markers[0].id} · ${markers[0].dictionary} · ${metres(markers[0])}`;
+    return `ID ${markers[0].id} · ${markers[0].dictionary} · ${metres(markers[0])} · ${px(markers[0])}`;
   }
-  const listed = markers.slice(0, MAX_LISTED).map((m) => `${m.id} (${metres(m)})`);
+  const listed = markers.slice(0, MAX_LISTED).map((m) => `${m.id} (${metres(m)}, ${px(m)})`);
   const more = markers.length - listed.length;
   return `${markers.length} markers · ${markers[0].dictionary}: ${listed.join(', ')}${more > 0 ? ` +${more} more` : ''}`;
 }
@@ -72,7 +80,9 @@ function drawOverlay(
   const convention = getConvention(settings.convention);
   ctx.clearRect(0, 0, intrinsics.width, intrinsics.height);
   if (background) {
+    ctx.imageSmoothingEnabled = false;
     ctx.drawImage(background, 0, 0, intrinsics.width, intrinsics.height);
+    ctx.imageSmoothingEnabled = true;
   }
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
@@ -157,6 +167,8 @@ export function ArucoScanner({
     convention: defaultConvention,
     markerSizeMm: clampNumber(defaultMarkerSizeMm, 1, 10000),
     fovDeg: clampNumber(defaultHorizontalFovDeg, 10, 170),
+    detectWidthPx: DEFAULT_DETECT_WIDTH,
+    showDetectorView: false,
   });
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -308,9 +320,13 @@ export function ArucoScanner({
         detector = createDetector(current.dictionary);
         tracker.reset();
       }
-      const scale = Math.min(1, MAX_DETECT_WIDTH / width);
-      scratch.width = Math.round(width * scale);
-      scratch.height = Math.round(height * scale);
+      const scale = Math.min(1, current.detectWidthPx / width);
+      const scratchWidth = Math.round(width * scale);
+      const scratchHeight = Math.round(height * scale);
+      if (scratch.width !== scratchWidth || scratch.height !== scratchHeight) {
+        scratch.width = scratchWidth;
+        scratch.height = scratchHeight;
+      }
       scratchCtx.drawImage(active, 0, 0, scratch.width, scratch.height);
       const intrinsics: Intrinsics = { width, height, focal: focalFromFov(width, current.fovDeg) };
       const raw = detector
@@ -323,12 +339,16 @@ export function ArucoScanner({
           const { corners } = marker;
           const pose = estimatePose(corners, intrinsics, current.markerSizeMm);
           const [tx, ty, tz] = pose.translation;
-          return { ...marker, corners, dictionary: current.dictionary, pose, distanceMm: Math.hypot(tx, ty, tz) };
+          // Marker edge as the detector saw it, in pixels of the downscaled frame.
+          const edgePx = Math.hypot(corners[1].x - corners[0].x, corners[1].y - corners[0].y) * scale;
+          return { ...marker, corners, dictionary: current.dictionary, pose, distanceMm: Math.hypot(tx, ty, tz), edgePx };
         })
         .sort((a, b) => a.distanceMm - b.distanceMm);
-      drawOverlay(ctx, active instanceof HTMLVideoElement ? null : active, found, current, intrinsics);
+      const background = current.showDetectorView ? scratch : active instanceof HTMLVideoElement ? null : active;
+      drawOverlay(ctx, background, found, current, intrinsics);
       setMarkers((previous) =>
-        previous.length === found.length && previous.every((m, i) => m.id === found[i].id && Math.abs(m.distanceMm - found[i].distanceMm) < 5)
+        previous.length === found.length &&
+        previous.every((m, i) => m.id === found[i].id && Math.abs(m.distanceMm - found[i].distanceMm) < 5 && Math.abs(m.edgePx - found[i].edgePx) < 1)
           ? previous
           : found,
       );
@@ -353,8 +373,12 @@ export function ArucoScanner({
       convention: String(data.get('convention')),
       markerSizeMm: clampNumber(Number(data.get('size')), 1, 10000),
       fovDeg: clampNumber(Number(data.get('fov')), 10, 170),
+      detectWidthPx: clampNumber(Number(data.get('detect')), DETECT_WIDTHS[0], DETECT_WIDTHS[DETECT_WIDTHS.length - 1]),
+      showDetectorView: data.get('detectorView') === 'on',
     });
   };
+
+  const minEdgePx = markerModules(settings.dictionary) * PX_PER_MODULE;
 
   const convention = getConvention(settings.convention);
 
@@ -468,6 +492,30 @@ export function ArucoScanner({
               Calibrate field of view
             </button>
           </div>
+
+          <div className="atg-field atg-field--row">
+            <div className="atg-field">
+              <label className="atg-label" htmlFor={`${uid}-detect`}>
+                Detection width
+              </label>
+              <select id={`${uid}-detect`} name="detect" className="atg-input" defaultValue={settings.detectWidthPx}>
+                {DETECT_WIDTHS.map((w) => (
+                  <option key={w} value={w}>
+                    {w} px
+                  </option>
+                ))}
+              </select>
+            </div>
+            <label className="atg-check" style={{ alignSelf: 'end' }}>
+              <input type="checkbox" name="detectorView" defaultChecked={settings.showDetectorView} />
+              Show detector view
+            </label>
+          </div>
+          <p className="atg-help">
+            Frames are downscaled to this width before detection. Lower values simulate a low-resolution camera, so you can
+            find the range limit for a marker size. A {settings.dictionary} marker needs at least {minEdgePx} px across at
+            this resolution; the status line shows the measured size.
+          </p>
         </form>
       </div>
     </section>
